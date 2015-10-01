@@ -1,4 +1,6 @@
 (function() {
+  var port = document.getElementById('viewport');
+  var leftScroll = document.getElementById('viewport').scrollLeft;
   var canvas = document.getElementById('canvas');
   var context = canvas.getContext('2d');
   var levelCols = 300;
@@ -17,10 +19,11 @@
   var playerYSpeed = 0;
   var jumpStart = 0;
   var jumpHeight = 0;
-  var maxJump = 7;
+  var maxJump = 15;
   var jumping = false;
   var falling = false;
   var friction = .8;
+  var canJump = true;
 
   var level = [
     [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
@@ -85,7 +88,9 @@
         break
       case 32:
         jumpPressed = false;
-        falling = true;
+        // falling = true;
+        jumping = false;
+        canJump = true;
         break;
     }
   }, false);
@@ -123,7 +128,7 @@
     playerYSpeed = gravity;
 
     if(rightPressed){
-      playerXSpeed=movementSpeed
+      playerXSpeed=movementSpeed;
     }
     else{
       if(leftPressed){
@@ -141,18 +146,20 @@
       }
     }
 
-    movementSpeed *= friction;
+    // movementSpeed *= friction;
 
     if(jumpPressed){
-      if(!jumping && !falling){
+      if(!jumping && !falling && canJump){
         jumping = true;
         if(jumpHeight<maxJump){
-          playerYSpeed =- 18;
+          playerYSpeed =- 2;
           jumpHeight++;
           console.log(jumpHeight);
           if(jumpHeight==maxJump){
             console.log('max hit');
+            jumping = false;
             falling = true;
+            canJump = false;
           }
         }
       }
@@ -165,11 +172,15 @@
       jumping = false;
     }
 
+    console.log(canJump);
+    console.log(falling);
+    console.log(jumping);
+    console.log(jumpHeight)
+
     playerXPos+=playerXSpeed;
     playerYPos+=playerYSpeed;
 
-    port = document.getElementById('viewport');
-    leftScroll = document.getElementById('viewport').scrollLeft;
+    
 
     //scrolling
     if(playerXPos>(leftScroll+650)){
