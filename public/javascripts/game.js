@@ -16,7 +16,10 @@
   var playerXSpeed = 0;
   var playerYSpeed = 0;
   var jumpStart = 0;
+  var jumpHeight = 0;
+  var maxJump = 7;
   var jumping = false;
+  var falling = false;
   var friction = .8;
 
   var level = [
@@ -82,6 +85,7 @@
         break
       case 32:
         jumpPressed = false;
+        falling = true;
         break;
     }
   }, false);
@@ -140,10 +144,23 @@
     movementSpeed *= friction;
 
     if(jumpPressed){
-      if(!jumping){
+      if(!jumping && !falling){
         jumping = true;
-        jumpStart = playerYSpeed;
-        playerYSpeed =- 18;
+        if(jumpHeight<maxJump){
+          playerYSpeed =- 18;
+          jumpHeight++;
+          console.log(jumpHeight);
+          if(jumpHeight==maxJump){
+            console.log('max hit');
+            falling = true;
+          }
+        }
+      }
+      if(falling){
+        jumpHeight--;
+        if(jumpHeight==0){
+          falling = false;
+        }
       }
       jumping = false;
     }
