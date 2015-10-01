@@ -16,6 +16,8 @@
   var playerXSpeed = 0;
   var playerYSpeed = 0;
   var jumpStart = 0;
+  var jumping = false;
+  var friction = .8;
 
   var level = [
     [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
@@ -135,10 +137,16 @@
       }
     }
 
-    if(jumpPressed && playerYSpeed >= 0){
-      jumpStart = playerYSpeed;
-      playerYSpeed =- 18;
+    movementSpeed *= friction;
+
+    if(jumpPressed){
+      if(!jumping){
+        jumping = true;
+        jumpStart = playerYSpeed;
+        playerYSpeed =- 18;
       }
+      jumping = false;
+    }
 
     playerXPos+=playerXSpeed;
     playerYPos+=playerYSpeed;
