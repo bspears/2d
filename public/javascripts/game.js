@@ -1,13 +1,12 @@
 (function() {
   var port = document.getElementById('viewport');
   var leftScroll = document.getElementById('viewport').scrollLeft;
+  var scrollTop = document.getElementById('viewport').scrollTop;
   var canvas = document.getElementById('canvas');
   var context = canvas.getContext('2d');
   var levelCols = 300;
   var levelRows = 16;
   var tileSize = 30;
-  var playerCol = 5;
-  var playerRow = 13;
   var leftPressed = false;
   var rightPressed = false;
   var upPressed = false;
@@ -15,8 +14,6 @@
   var jumpPressed = false;
   var movementSpeed = 5;
   var gravity = 20;
-  var playerXSpeed = 0;
-  var playerYSpeed = 0;
   var jumpStart = 0;
   var jumpHeight = 0;
   var maxJump = 15;
@@ -24,6 +21,29 @@
   var falling = false;
   var friction = .8;
   var canJump = true;
+
+
+  var player = {
+    "lives" : 3,
+    "jumping" : false,
+    "maxSpeed" : 5,
+    "row" : 13,
+    "col" : 5,
+    "xspeed" : 0,
+    "yspeed" : 0,
+    "attack" : 1,
+  }
+
+  var enemy = {
+    "col" : 10,
+    "row" : 13,
+    "hp" : 1,
+    "xspped" : 0,
+    "yspeed" : 0,
+    "attack" : 1
+  }
+  console.log(player);
+
 
   var level = [
     [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
@@ -44,8 +64,11 @@
     [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1]
   ];
 
-  var playerYPos = playerRow*tileSize;
-  var playerXPos = playerCol*=tileSize;
+  var playerYPos = player.row*tileSize;
+  var playerXPos = player.col*=tileSize;
+
+  var enemyYPos = enemy.row*tileSize;
+  var enemyXPos = enemy.col*=tileSize;  
 
   canvas.width = tileSize*levelCols;
   canvas.height = tileSize*levelRows;
@@ -67,7 +90,7 @@
         downPressed = true;
         break;
       case 32:
-        jumpPressed = true;
+        player.jumping = true;
         break;
     }
   }, false);
@@ -87,10 +110,7 @@
         downPressed = false;
         break
       case 32:
-        jumpPressed = false;
-        // falling = true;
-        jumping = false;
-        canJump = true;
+        player.jumping = false;
         break;
     }
   }, false);
@@ -109,6 +129,10 @@
       }
     }
 
+    //enemy1
+    context.fillStyle = '#ff3333';
+    context.fillRect(enemyXPos,enemyYPos,tileSize,tileSize);
+
     //player
     context.fillStyle = '#5588ee';
     context.fillRect(playerXPos,playerYPos,tileSize,tileSize);
@@ -124,23 +148,23 @@
 
 
   function updateGame() {
-    playerXSpeed = 0;
-    playerYSpeed = gravity;
+    player.xspeed = 0;
+    player.yspeed = 0;
 
     if(rightPressed){
-      playerXSpeed=movementSpeed;
+      player.xspeed=player.maxSpeed;
     }
     else{
       if(leftPressed){
-        playerXSpeed=-movementSpeed;
+        player.xspeed=-movementSpeed;
       }
       else{
         if(upPressed){
-          // playerYSpeed=-movementSpeed;
+          player.yspeed=-movementSpeed;
         }
         else{
           if(downPressed){
-            playerYSpeed=movementSpeed;
+            player.yspeed=movementSpeed;
           }
         }
       }
@@ -148,47 +172,52 @@
 
     // movementSpeed *= friction;
 
-    if(jumpPressed){
-      if(!jumping && !falling && canJump){
-        jumping = true;
-        if(jumpHeight<maxJump){
-          playerYSpeed =- 2;
-          jumpHeight++;
-          console.log(jumpHeight);
-          if(jumpHeight==maxJump){
-            console.log('max hit');
-            jumping = false;
-            falling = true;
-            canJump = false;
-          }
-        }
-      }
-      if(falling){
-        jumpHeight--;
-        if(jumpHeight==0){
-          falling = false;
-        }
-      }
-      jumping = false;
-    }
+    // if(jumpPressed){
+    //   if(!jumping && !falling && canJump){
+    //     jumping = true;
+    //     if(jumpHeight<maxJump){
+    //       player.yspeed =- 2;
+    //       jumpHeight++;
+    //       console.log(jumpHeight);
+    //       if(jumpHeight==maxJump){
+    //         console.log('max hit');
+    //         jumping = false;
+    //         falling = true;
+    //         canJump = false;
+    //       }
+    //     }
+    //   }
+    //   if(falling){
+    //     jumpHeight--;
+    //     if(jumpHeight==0){
+    //       falling = false;
+    //     }
+    //   }
+    //   jumping = false;
+    // }
 
-    console.log(canJump);
-    console.log(falling);
-    console.log(jumping);
-    console.log(jumpHeight)
 
-    playerXPos+=playerXSpeed;
-    playerYPos+=playerYSpeed;
+    playerXPos+=player.xspeed;
+    playerYPos+=player.yspeed;
 
     
 
     //scrolling
     if(playerXPos>(leftScroll+650)){
-      port.scrollTo(leftScroll+7,0);
+      port.scrollLeft+=7;
     }
     else{
       if(playerXPos<(leftScroll+50)){
-        port.scrollTo(leftScroll-7,0);
+        port.scrollLeft-=7;
+      }
+    }
+
+    if(playerYPos>scrollTop){
+      //Do stuff
+    }
+    else{
+      if(playerYPos<scrollTop){
+        //do other stuff
       }
     }
 
@@ -199,17 +228,19 @@
     var rowOverlap = playerYPos%tileSize;
 
     //Horzontal collision
-    if(playerXSpeed>0){
+    if(player.xspeed>0){
       if((level[baseRow][baseCol+1] && !level[baseRow][baseCol]) || (level[baseRow+1][baseCol+1] && !level[baseRow+1][baseCol] && rowOverlap)){
         playerXPos=baseCol*tileSize;
       }
     }
 
-    if(playerXSpeed<0){
+    if(player.xspeed<0){
       if((!level[baseRow][baseCol+1] && level[baseRow][baseCol]) || (!level[baseRow+1][baseCol+1] && level[baseRow+1][baseCol] && rowOverlap)){
         playerXPos=(baseCol+1)*tileSize;
       }
     }
+
+
 
     baseCol = Math.floor(playerXPos/tileSize);
     baseRow = Math.floor(playerYPos/tileSize);
@@ -217,15 +248,70 @@
     rowOverlap = playerYPos%tileSize;
 
     //Vertical collision
-    if(playerYSpeed>0){
+    if(player.yspeed>0){
       if((level[baseRow+1][baseCol] && !level[baseRow][baseCol]) || (level[baseRow+1][baseCol+1] && !level[baseRow][baseCol+1] && colOverlap)){
         playerYPos = baseRow*tileSize;
       }
     }
 
-    if(playerYSpeed<0){
+    if(player.yspeed<0){
       if((!level[baseRow+1][baseCol] && level[baseRow][baseCol]) || (!level[baseRow+1][baseCol+1] && level[baseRow][baseCol+1] && rowOverlap)){
         playerYPos=(baseRow+1)*tileSize;
+      }
+    }
+
+    //enemy collision
+    //Horzontal collision
+    if(enemy.xspeed>0){
+      if((level[baseRow][baseCol+1] && !level[baseRow][baseCol]) || (level[baseRow+1][baseCol+1] && !level[baseRow+1][baseCol] && rowOverlap)){
+        enemyXPos=baseCol*tileSize;
+      }
+    }
+
+    if(enemy.xspeed<0){
+      if((!level[baseRow][baseCol+1] && level[baseRow][baseCol]) || (!level[baseRow+1][baseCol+1] && level[baseRow+1][baseCol] && rowOverlap)){
+        enemyXPos=(baseCol+1)*tileSize;
+      }
+    }
+
+    //damage
+    if(playerYPos == enemyYPos && playerXPos == enemyXPos) {
+      //take damage
+      player.lives -=1;
+      console.log(player.lives);
+      //bump backward
+      if(player.xspeed>0){
+        playerXPos -=80;
+      }
+      else if(player.xspeed<0){
+        playerXPos +=80;
+      }
+      else if(player.yspeed>0){
+        playerYPos -=80;
+      }
+      else if(player.yspeed<0){
+        playerYPos +=80;
+      }
+      
+      //safe period
+    }
+    
+
+    baseCol = Math.floor(enemyXPos/tileSize);
+    baseRow = Math.floor(enemyYPos/tileSize);
+    colOverlap = enemyXPos%tileSize;
+    rowOverlap = enemyYPos%tileSize;
+
+    //Vertical collision
+    if(enemy.yspeed>0){
+      if((level[baseRow+1][baseCol] && !level[baseRow][baseCol]) || (level[baseRow+1][baseCol+1] && !level[baseRow][baseCol+1] && colOverlap)){
+        enemyYPos = baseRow*tileSize;
+      }
+    }
+
+    if(enemy.yspeed<0){
+      if((!level[baseRow+1][baseCol] && level[baseRow][baseCol]) || (!level[baseRow+1][baseCol+1] && level[baseRow][baseCol+1] && rowOverlap)){
+        enemyYPos=(baseRow+1)*tileSize;
       }
     }
 
