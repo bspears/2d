@@ -3,6 +3,7 @@
   var leftScroll = document.getElementById('viewport').scrollLeft;
   var scrollTop = document.getElementById('viewport').scrollTop;
   var canvas = document.getElementById('canvas');
+  var lives = document.getElementById('lives');
   var context = canvas.getContext('2d');
   var levelCols = 300;
   var levelRows = 16;
@@ -21,9 +22,14 @@
   var falling = false;
   var friction = .8;
   var canJump = true;
+  var playerTop = (playerYPos-tileSize)*tileSize;
+  var playerBottom = (playerYPos+tileSize)*tileSize;
+  var playerleft = (playerXPos-tileSize)*tileSize;
+  var playerRight = (playerXPos+tileSize)*tileSize;
 
 
   var player = {
+    "name" : "Rupert",
     "lives" : 3,
     "jumping" : false,
     "maxSpeed" : 5,
@@ -68,7 +74,7 @@
   var playerXPos = player.col*=tileSize;
 
   var enemyYPos = enemy.row*tileSize;
-  var enemyXPos = enemy.col*=tileSize;  
+  var enemyXPos = enemy.col*=tileSize;
 
   canvas.width = tileSize*levelCols;
   canvas.height = tileSize*levelRows;
@@ -136,7 +142,12 @@
     //player
     context.fillStyle = '#5588ee';
     context.fillRect(playerXPos,playerYPos,tileSize,tileSize);
+
+    context.fillStyle = '#ddd';
+    context.fillRect(playerXPos,playerTop,tileSize,tileSize);
   }
+
+
 
   //Frame rate
   window.requestAnimFrame = (function(callback) {
@@ -148,8 +159,9 @@
 
 
   function updateGame() {
-    player.xspeed = 0;
+    lives.textContent = "Lives" + " " +player.lives;
     player.yspeed = 0;
+    player.xspeed = 0;
 
     if(rightPressed){
       player.xspeed=player.maxSpeed;
@@ -200,7 +212,7 @@
     playerXPos+=player.xspeed;
     playerYPos+=player.yspeed;
 
-    
+
 
     //scrolling
     if(playerXPos>(leftScroll+650)){
@@ -240,8 +252,6 @@
       }
     }
 
-
-
     baseCol = Math.floor(playerXPos/tileSize);
     baseRow = Math.floor(playerYPos/tileSize);
     colOverlap = playerXPos%tileSize;
@@ -277,7 +287,7 @@
     //damage
     if(playerYPos == enemyYPos && playerXPos == enemyXPos) {
       //take damage
-      player.lives -=1;
+      loseLife(player);
       console.log(player.lives);
       //bump backward
       if(player.xspeed>0){
@@ -292,10 +302,20 @@
       else if(player.yspeed<0){
         playerYPos +=80;
       }
-      
+
       //safe period
     }
-    
+
+    //attack
+
+    //hitboxes
+
+
+
+
+    // if(attacking){
+
+    // }
 
     baseCol = Math.floor(enemyXPos/tileSize);
     baseRow = Math.floor(enemyYPos/tileSize);
