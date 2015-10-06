@@ -22,11 +22,11 @@
   var falling = false;
   var friction = .8;
   var canJump = true;
-  var playerTop = (playerYPos-tileSize)*tileSize;
+  var playerTop = (playerYPos-tileSize);
   var playerBottom = (playerYPos+tileSize)*tileSize;
   var playerleft = (playerXPos-tileSize)*tileSize;
   var playerRight = (playerXPos+tileSize)*tileSize;
-
+  var hitBox = 0;
 
   var player = {
     "name" : "Rupert",
@@ -38,13 +38,14 @@
     "xspeed" : 0,
     "yspeed" : 0,
     "attack" : 1,
+    "attacking" : false
   }
 
   var enemy = {
     "col" : 10,
-    "row" : 13,
+    "row" : 10,
     "hp" : 1,
-    "xspped" : 0,
+    "xspeed" : 0,
     "yspeed" : 0,
     "attack" : 1
   }
@@ -79,7 +80,7 @@
   canvas.width = tileSize*levelCols;
   canvas.height = tileSize*levelRows;
 
-  //register key presses
+  //Key mapping
   document.addEventListener('keydown', function(e){
     console.log(e.keyCode);
     switch(e.keyCode){
@@ -98,6 +99,9 @@
       case 32:
         player.jumping = true;
         break;
+      case 17:
+        player.attacking = true;
+        break;  
     }
   }, false);
 
@@ -118,6 +122,9 @@
       case 32:
         player.jumping = false;
         break;
+      case 17:
+        player.attacking = false;
+        break;  
     }
   }, false);
 
@@ -211,6 +218,10 @@
 
     playerXPos+=player.xspeed;
     playerYPos+=player.yspeed;
+    playerTop = (playerYPos-tileSize);
+    playerBottom = (playerYPos+tileSize);
+    playerleft = (playerXPos-tileSize);
+    playerRight = (playerXPos+tileSize);
 
 
 
@@ -287,7 +298,7 @@
     //damage
     if(playerYPos == enemyYPos && playerXPos == enemyXPos) {
       //take damage
-      loseLife(player);
+      loseLife(player,enemy);
       console.log(player.lives);
       //bump backward
       if(player.xspeed>0){
@@ -307,8 +318,24 @@
     }
 
     //attack
-
-    //hitboxes
+      if(player.attacking){
+        hitBox = tileSize*1.5;
+        console.log('attack!');
+        if(playerXPos < enemyXPos + hitBox &&
+          playerXPos + hitBox > enemyXPos &&
+          playerYPos < enemyYPos + hitBox &&
+          playerYPos + hitBox > enemyYPos){
+          enemy.hp -= player.attack;
+          console.log('hit');
+        }
+        player.attacking = false;
+      }
+      
+      //kills
+      if(enemy.hp <= 0){
+        enemy.addClass('dead');
+        console.log(enemy);
+      }
 
 
 

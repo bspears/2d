@@ -1,5 +1,5 @@
-function loseLife(character){
-  character.lives -=1;
+function loseLife(character, enemy){
+  character.lives -= enemy.attack;
   console.log('working');
 };
 
