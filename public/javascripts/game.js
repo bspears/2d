@@ -38,6 +38,10 @@
     "xspeed" : 0,
     "yspeed" : 0,
     "attack" : 1,
+    "topBox" : playerYPos - tileSize,
+    "rightBox" : playerXPos + tileSize,
+    "bottomBox" : playerYPos + tileSize,
+    "leftBox" : playerYPos - tileSize,
     "attacking" : false
   }
 
@@ -304,13 +308,16 @@
     }
 
     //damage
-    if((playerYPos == enemyYPos && playerXPos == enemyXPos + 20) ||
-       (playerYPos == enemyYPos && playerXPos == enemyXPos - 20) ||
-       (playerYPos == enemyYPos + 20 && playerXPos == enemyXPos) ||
-       (playerYPos == enemyYPos - 20 && playerXPos == enemyXPos)) {
+    if(playerYPos/enemyYPos >= .93 && playerYPos/enemyYPos < 1.07 &&
+      playerXPos/enemyXPos >= .93 && playerXPos/enemyXPos < 1.07 
+       ){
       //take damage
       loseLife(player,enemy);
       console.log(player.lives);
+      
+
+      // console.log("Y="+playerYPos%enemyYPos);
+      // console.log("X="+playerXPos%enemyXPos);
       //bump backward
       if(player.xspeed>0){
         playerXPos -=80;
@@ -332,10 +339,9 @@
       if(player.attacking){
         hitBox = tileSize*1.5;
         console.log('attack!');
-        if(playerXPos < enemyXPos + hitBox &&
-          playerXPos + hitBox > enemyXPos &&
-          playerYPos < enemyYPos + hitBox &&
-          playerYPos + hitBox > enemyYPos){
+        if(playerYPos/enemyYPos >= .9 && playerYPos/enemyYPos < 1.2 &&
+           playerXPos/enemyXPos >= .87 && playerXPos/enemyXPos < 1.2 
+       ){
           enemy.hp -= player.attack;
           console.log('hit');
         }
@@ -344,8 +350,9 @@
 
       //kills
       if(enemy.hp <= 0){
-        enemy.addClass('dead');
         console.log(enemy);
+        enemy.hp ++;
+
       }
 
 
@@ -373,6 +380,12 @@
       }
     }
 
+    // console.log("playerY="+playerYPos);
+    // //   console.log("playerX="+playerXPos);
+
+    //   console.log("enemyY="+enemyYPos);
+    // //   console.log("enemyX="+enemyXPos);
+    // console.log("%="+playerYPos/enemyYPos);
     renderLevel();
 
     requestAnimFrame(function() {
