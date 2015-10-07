@@ -101,7 +101,7 @@
         break;
       case 17:
         player.attacking = true;
-        break;  
+        break;
     }
   }, false);
 
@@ -124,7 +124,7 @@
         break;
       case 17:
         player.attacking = false;
-        break;  
+        break;
     }
   }, false);
 
@@ -158,7 +158,9 @@
 
   //Frame rate
   window.requestAnimFrame = (function(callback) {
-    return window.requestAnimFrame || window.webkitRequestAnimationFrame || window.mozRequestAnimationFrame ||
+    return window.requestAnimFrame ||
+           window.webkitRequestAnimationFrame ||
+           window.mozRequestAnimationFrame ||
     function(callback) {
       window.setTimeout(callback, 1000/60);
     };
@@ -252,13 +254,15 @@
 
     //Horzontal collision
     if(player.xspeed>0){
-      if((level[baseRow][baseCol+1] && !level[baseRow][baseCol]) || (level[baseRow+1][baseCol+1] && !level[baseRow+1][baseCol] && rowOverlap)){
+      if((level[baseRow][baseCol+1] && !level[baseRow][baseCol]) ||
+         (level[baseRow+1][baseCol+1] && !level[baseRow+1][baseCol] && rowOverlap)){
         playerXPos=baseCol*tileSize;
       }
     }
 
     if(player.xspeed<0){
-      if((!level[baseRow][baseCol+1] && level[baseRow][baseCol]) || (!level[baseRow+1][baseCol+1] && level[baseRow+1][baseCol] && rowOverlap)){
+      if((!level[baseRow][baseCol+1] && level[baseRow][baseCol]) ||
+         (!level[baseRow+1][baseCol+1] && level[baseRow+1][baseCol] && rowOverlap)){
         playerXPos=(baseCol+1)*tileSize;
       }
     }
@@ -270,13 +274,15 @@
 
     //Vertical collision
     if(player.yspeed>0){
-      if((level[baseRow+1][baseCol] && !level[baseRow][baseCol]) || (level[baseRow+1][baseCol+1] && !level[baseRow][baseCol+1] && colOverlap)){
+      if((level[baseRow+1][baseCol] && !level[baseRow][baseCol]) ||
+         (level[baseRow+1][baseCol+1] && !level[baseRow][baseCol+1] && colOverlap)){
         playerYPos = baseRow*tileSize;
       }
     }
 
     if(player.yspeed<0){
-      if((!level[baseRow+1][baseCol] && level[baseRow][baseCol]) || (!level[baseRow+1][baseCol+1] && level[baseRow][baseCol+1] && rowOverlap)){
+      if((!level[baseRow+1][baseCol] && level[baseRow][baseCol]) ||
+         (!level[baseRow+1][baseCol+1] && level[baseRow][baseCol+1] && rowOverlap)){
         playerYPos=(baseRow+1)*tileSize;
       }
     }
@@ -284,19 +290,24 @@
     //enemy collision
     //Horzontal collision
     if(enemy.xspeed>0){
-      if((level[baseRow][baseCol+1] && !level[baseRow][baseCol]) || (level[baseRow+1][baseCol+1] && !level[baseRow+1][baseCol] && rowOverlap)){
+      if((level[baseRow][baseCol+1] && !level[baseRow][baseCol]) ||
+         (level[baseRow+1][baseCol+1] && !level[baseRow+1][baseCol] && rowOverlap)){
         enemyXPos=baseCol*tileSize;
       }
     }
 
     if(enemy.xspeed<0){
-      if((!level[baseRow][baseCol+1] && level[baseRow][baseCol]) || (!level[baseRow+1][baseCol+1] && level[baseRow+1][baseCol] && rowOverlap)){
+      if((!level[baseRow][baseCol+1] && level[baseRow][baseCol]) ||
+         (!level[baseRow+1][baseCol+1] && level[baseRow+1][baseCol] && rowOverlap)){
         enemyXPos=(baseCol+1)*tileSize;
       }
     }
 
     //damage
-    if(playerYPos == enemyYPos && playerXPos == enemyXPos) {
+    if((playerYPos == enemyYPos && playerXPos == enemyXPos + 20) ||
+       (playerYPos == enemyYPos && playerXPos == enemyXPos - 20) ||
+       (playerYPos == enemyYPos + 20 && playerXPos == enemyXPos) ||
+       (playerYPos == enemyYPos - 20 && playerXPos == enemyXPos)) {
       //take damage
       loseLife(player,enemy);
       console.log(player.lives);
@@ -330,7 +341,7 @@
         }
         player.attacking = false;
       }
-      
+
       //kills
       if(enemy.hp <= 0){
         enemy.addClass('dead');
