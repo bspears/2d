@@ -22,11 +22,6 @@
   var falling = false;
   var friction = .8;
   var canJump = true;
-  var playerTop = (playerYPos-tileSize);
-  var playerBottom = (playerYPos+tileSize)*tileSize;
-  var playerleft = (playerXPos-tileSize)*tileSize;
-  var playerRight = (playerXPos+tileSize)*tileSize;
-  var hitBox = 0;
 
   var player = {
     "name" : "Rupert",
@@ -48,7 +43,7 @@
   var enemy = {
     "col" : 10,
     "row" : 10,
-    "hp" : 1,
+    "hp" : 2,
     "xspeed" : 0,
     "yspeed" : 0,
     "attack" : 1
@@ -103,7 +98,7 @@
       case 32:
         player.jumping = true;
         break;
-      case 17:
+      case 16:
         player.attacking = true;
         break;
     }
@@ -126,7 +121,7 @@
       case 32:
         player.jumping = false;
         break;
-      case 17:
+      case 16:
         player.attacking = false;
         break;
     }
@@ -147,18 +142,17 @@
     }
 
     //enemy1
-    context.fillStyle = '#ff3333';
-    context.fillRect(enemyXPos,enemyYPos,tileSize,tileSize);
+    if(enemy.hp>0){
+      context.fillStyle = '#ff3333';
+      context.fillRect(enemyXPos,enemyYPos,tileSize,tileSize);
+    }
 
     //player
-    context.fillStyle = '#5588ee';
-    context.fillRect(playerXPos,playerYPos,tileSize,tileSize);
-
-    context.fillStyle = '#ddd';
-    context.fillRect(playerXPos,playerTop,tileSize,tileSize);
+    if(player.lives>0){
+      context.fillStyle = '#5588ee';
+      context.fillRect(playerXPos,playerYPos,tileSize,tileSize);
+    }
   }
-
-
 
   //Frame rate
   window.requestAnimFrame = (function(callback) {
@@ -234,10 +228,14 @@
     //scrolling
     if(playerXPos>(leftScroll+650)){
       port.scrollLeft+=7;
+      leftScroll+=7;
+      console.log('x='+playerXPos);
+      console.log('s='+leftScroll);
     }
     else{
       if(playerXPos<(leftScroll+50)){
         port.scrollLeft-=7;
+        leftScroll-=7;
       }
     }
 
@@ -249,7 +247,6 @@
         //do other stuff
       }
     }
-
 
     var baseCol = Math.floor(playerXPos/tileSize);
     var baseRow = Math.floor(playerYPos/tileSize);
@@ -309,12 +306,12 @@
 
     //damage
     if(playerYPos/enemyYPos >= .93 && playerYPos/enemyYPos < 1.07 &&
-      playerXPos/enemyXPos >= .93 && playerXPos/enemyXPos < 1.07 
+      playerXPos/enemyXPos >= .93 && playerXPos/enemyXPos < 1.07
        ){
       //take damage
       loseLife(player,enemy);
       console.log(player.lives);
-      
+
 
       // console.log("Y="+playerYPos%enemyYPos);
       // console.log("X="+playerXPos%enemyXPos);
@@ -339,9 +336,13 @@
       if(player.attacking){
         hitBox = tileSize*1.5;
         console.log('attack!');
-        if(playerYPos/enemyYPos >= .9 && playerYPos/enemyYPos < 1.2 &&
-           playerXPos/enemyXPos >= .87 && playerXPos/enemyXPos < 1.2 
-       ){
+        console.log("y%="+playerYPos/enemyYPos);
+        console.log("x%="+playerXPos/enemyXPos);
+        if((playerYPos/enemyYPos >= .84 && playerYPos/enemyYPos < 1.2 &&
+           playerXPos/enemyXPos >= .91 && playerXPos/enemyXPos < 1.06) ||
+           (playerYPos/enemyYPos >= .95 && playerYPos/enemyYPos < 1.06 &&
+           playerXPos/enemyXPos >= .83 && playerXPos/enemyXPos < 1.16)
+          ){
           enemy.hp -= player.attack;
           console.log('hit');
         }
@@ -349,14 +350,10 @@
       }
 
       //kills
-      if(enemy.hp <= 0){
-        console.log(enemy);
-        enemy.hp ++;
+      // if(enemy.hp <= 0){
+      //   console.log(enemy);
 
-      }
-
-
-
+      // }
 
     // if(attacking){
 
@@ -369,13 +366,15 @@
 
     //Vertical collision
     if(enemy.yspeed>0){
-      if((level[baseRow+1][baseCol] && !level[baseRow][baseCol]) || (level[baseRow+1][baseCol+1] && !level[baseRow][baseCol+1] && colOverlap)){
+      if((level[baseRow+1][baseCol] && !level[baseRow][baseCol]) ||
+        (level[baseRow+1][baseCol+1] && !level[baseRow][baseCol+1] && colOverlap)){
         enemyYPos = baseRow*tileSize;
       }
     }
 
     if(enemy.yspeed<0){
-      if((!level[baseRow+1][baseCol] && level[baseRow][baseCol]) || (!level[baseRow+1][baseCol+1] && level[baseRow][baseCol+1] && rowOverlap)){
+      if((!level[baseRow+1][baseCol] && level[baseRow][baseCol]) ||
+        (!level[baseRow+1][baseCol+1] && level[baseRow][baseCol+1] && rowOverlap)){
         enemyYPos=(baseRow+1)*tileSize;
       }
     }
@@ -385,7 +384,8 @@
 
     //   console.log("enemyY="+enemyYPos);
     // //   console.log("enemyX="+enemyXPos);
-    // console.log("%="+playerYPos/enemyYPos);
+
+
     renderLevel();
 
     requestAnimFrame(function() {
