@@ -6,3 +6,4 @@ function loseLife(character, enemy){
 function gameOver(){
   //show game over screen
 }
+

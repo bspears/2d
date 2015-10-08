@@ -22,6 +22,10 @@
   var falling = false;
   var friction = .8;
   var canJump = true;
+  var imageObj = new Image();
+  var playerAvatar = document.getElementById('avatar');
+
+
 
   var player = {
     "name" : "Rupert",
@@ -33,10 +37,7 @@
     "xspeed" : 0,
     "yspeed" : 0,
     "attack" : 1,
-    "topBox" : playerYPos - tileSize,
-    "rightBox" : playerXPos + tileSize,
-    "bottomBox" : playerYPos + tileSize,
-    "leftBox" : playerYPos - tileSize,
+    "direction" : "up",
     "attacking" : false
   }
 
@@ -85,15 +86,19 @@
     switch(e.keyCode){
       case 65:
         leftPressed = true;
+        player.direction = "left";
         break;
       case 87:
         upPressed = true;
+        player.direction = "up";
         break;
       case 68:
         rightPressed = true;
+        player.direction = "right";
         break;
       case 83:
         downPressed = true;
+        player.direction = "down";
         break;
       case 32:
         player.jumping = true;
@@ -130,6 +135,7 @@
 
   //build level
   function renderLevel(){
+      // imageObj.src = "././images/playerAvatar.png";
     //walls
     context.clearRect(0,0, canvas.width, canvas.height);
     context.fillStyle = '#999';
@@ -150,7 +156,7 @@
     //player
     if(player.lives>0){
       context.fillStyle = '#5588ee';
-      context.fillRect(playerXPos,playerYPos,tileSize,tileSize);
+      context.drawImage(imageObj,playerXPos,playerYPos);
     }
   }
 
@@ -312,10 +318,8 @@
       loseLife(player,enemy);
       console.log(player.lives);
 
-
-      // console.log("Y="+playerYPos%enemyYPos);
-      // console.log("X="+playerXPos%enemyXPos);
       //bump backward
+      // bumpBack(player,playerXPos,playerYPos);
       if(player.xspeed>0){
         playerXPos -=80;
       }
@@ -338,26 +342,36 @@
         console.log('attack!');
         console.log("y%="+playerYPos/enemyYPos);
         console.log("x%="+playerXPos/enemyXPos);
-        if((playerYPos/enemyYPos >= .84 && playerYPos/enemyYPos < 1.2 &&
-           playerXPos/enemyXPos >= .91 && playerXPos/enemyXPos < 1.06) ||
-           (playerYPos/enemyYPos >= .95 && playerYPos/enemyYPos < 1.06 &&
-           playerXPos/enemyXPos >= .83 && playerXPos/enemyXPos < 1.16)
-          ){
+        //up attack
+        if(player.direction == "up" && playerYPos/enemyYPos >= .84 && playerXPos/enemyXPos >= .91 && playerXPos/enemyXPos < 1.06){
+          console.log('uphit');
           enemy.hp -= player.attack;
-          console.log('hit');
         }
+        //down attack
+        if(player.direction == "down" && playerYPos/enemyYPos < 1.2 && playerXPos/enemyXPos >= .91 && playerXPos/enemyXPos < 1.06){
+          console.log('downhit');
+          enemy.hp -= player.attack;
+        }
+        //right attack
+        if(player.direction == "right" && playerXPos/enemyYPos >= .83 && playerYPos/enemyYPos >= .95 && playerYPos/enemyYPos < 1.16){
+          console.log('righthit');
+          enemy.hp -= player.attack;
+        }
+        //left attack
+        if(player.direction == "left" && playerXPos/enemyXPos < 1.16 && playerYPos/enemyYPos >= .95 && playerYPos/enemyYPos < 1.16){
+          console.log('lefthit');
+          enemy.hp -= player.attack;
+        }
+
         player.attacking = false;
       }
 
       //kills
-      // if(enemy.hp <= 0){
-      //   console.log(enemy);
+      if(enemy.hp <= 0){
+        enemyYPos = 0;
+        enemyXPos = 0;
 
-      // }
-
-    // if(attacking){
-
-    // }
+      }
 
     baseCol = Math.floor(enemyXPos/tileSize);
     baseRow = Math.floor(enemyYPos/tileSize);
@@ -378,13 +392,6 @@
         enemyYPos=(baseRow+1)*tileSize;
       }
     }
-
-    // console.log("playerY="+playerYPos);
-    // //   console.log("playerX="+playerXPos);
-
-    //   console.log("enemyY="+enemyYPos);
-    // //   console.log("enemyX="+enemyXPos);
-
 
     renderLevel();
 
