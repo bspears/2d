@@ -156,7 +156,7 @@
     //player
     if(player.lives>0){
       context.fillStyle = '#5588ee';
-      context.drawImage(imageObj,playerXPos,playerYPos);
+      context.drawImage(playerAvatar,playerXPos,playerYPos);
     }
   }
 
