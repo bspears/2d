@@ -24,7 +24,15 @@
   var canJump = true;
   var imageObj = new Image();
   var playerAvatar = document.getElementById('avatar');
+  var playerInfo = document.getElementById('playerInfo');
 
+
+var playerRunUp = new Image();
+var runUpFrame = {
+  "x" : 0,
+  "y" : 0
+}
+playerRunUp.src = "images/playerRunUp.png"
 
 
   var player = {
@@ -166,17 +174,17 @@
           context.fillRect(j*tileSize,i*tileSize,tileSize,tileSize);
         }
       }
-    } 
+    }
 
     //water
     context.fillStyle = '#99e7ff';
     for(i=0;i<levelRows;i++){
       for(j=0;j<levelCols;j++){
-        if(level[i][j]==1){
+        if(level[i][j]==2){
           context.fillRect(j*tileSize,i*tileSize,tileSize,tileSize);
         }
       }
-    }     
+    }
 
     //enemy1
     if(enemy.hp>0){
@@ -187,7 +195,7 @@
     //player
     if(player.lives>0){
       context.fillStyle = '#5588ee';
-      context.drawImage(playerAvatar,playerXPos,playerYPos);
+      context.drawImage(playerRunUp,runUpFrame.x,runUpFrame.y,30,30,playerXPos,playerYPos,30,30);
     }
   }
 
@@ -203,7 +211,7 @@
 
 
   function updateGame() {
-    lives.textContent = "Lives" + " " +player.lives;
+    updatePlayerInfo(player);
     player.yspeed = 0;
     player.xspeed = 0;
 
@@ -217,6 +225,9 @@
       else{
         if(upPressed){
           player.yspeed=-movementSpeed;
+          if(runUpFrame.x < 62){
+            runUpFrame.x += 30;
+          }
         }
         else{
           if(downPressed){
@@ -225,6 +236,9 @@
         }
       }
     }
+
+
+
 
     // movementSpeed *= friction;
 
@@ -263,26 +277,26 @@
 
 
     //scrolling
-    if(playerXPos>(leftScroll+650)){
+    if(playerXPos>(leftScroll+250)){
       port.scrollLeft+=7;
       leftScroll+=7;
     }
     else{
-      if(playerXPos<(leftScroll+100)){
+      if(playerXPos<(leftScroll+50)){
         port.scrollLeft-=7;
         leftScroll-=7;
       }
     }
 
-    if(playerYPos>port.scrollTop+100){
+    if(playerYPos>port.scrollTop+200){
       //Do stuff
-      port.scrollTop+=50;
-      
+      port.scrollTop+=7;
+
     }
     else{
-      if(playerYPos<port.scrollTop+50){
+      if(playerYPos<port.scrollTop+200){
         //do other stuff
-        port.scrollTop-=50;
+        port.scrollTop-=7;
       }
     }
 

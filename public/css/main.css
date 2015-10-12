@@ -1,7 +1,32 @@
+body {
+  font-family: 'VT323';
+  font-size: 30px; }
+
 .viewport {
   margin: 0 auto;
   height: 480px;
   width: 950px;
   overflow: scroll; }
+
+.info {
+  text-align: right;
+  padding: 5px 20px;
+  margin-right: 150px; }
+
+.name {
+  line-height: 30px;
+  vertical-align: top;
+  padding: 0;
+  margin: 0 1em; }
+
+.icon {
+  vertical-align: baseline; }
+
+#playerInfo {
+  text-align: right;
+  list-style-type: none;
+  display: inline; }
+  #playerInfo li {
+    display: inline; }
 
 /*# sourceMappingURL=main.css.map */
