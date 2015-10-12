@@ -16,3 +16,13 @@ function updatePlayerInfo(player){
       playerInfo.innerHTML += '<li class="icon"><img src="images/playerLife.png"></li>'
     }
   }
+
+function frameCounter(frames){
+	if(frames < 60){
+		frames++
+	}
+	else{
+		frames = 1;
+	}
+	return frames;
+}

@@ -25,14 +25,8 @@
   var imageObj = new Image();
   var playerAvatar = document.getElementById('avatar');
   var playerInfo = document.getElementById('playerInfo');
-
-
-var playerRunUp = new Image();
-var runUpFrame = {
-  "x" : 0,
-  "y" : 0
-}
-playerRunUp.src = "images/playerRunUp.png"
+  var frameCount = 0;
+  var pace = 0;
 
 
   var player = {
@@ -40,7 +34,7 @@ playerRunUp.src = "images/playerRunUp.png"
     "lives" : 3,
     "maxLives" : 3,
     "jumping" : false,
-    "maxSpeed" : 5,
+    "maxSpeed" : 4,
     "row" : 23,
     "col" : 5,
     "xspeed" : 0,
@@ -56,6 +50,7 @@ playerRunUp.src = "images/playerRunUp.png"
     "hp" : 2,
     "xspeed" : 0,
     "yspeed" : 0,
+    "maxSpeed" : 2,
     "attack" : 1
   }
   console.log(player);
@@ -194,8 +189,11 @@ playerRunUp.src = "images/playerRunUp.png"
 
     //player
     if(player.lives>0){
-      context.fillStyle = '#5588ee';
       context.drawImage(playerRunUp,runUpFrame.x,runUpFrame.y,30,30,playerXPos,playerYPos,30,30);
+    }
+
+    if(player.attacking){
+      // context.drawImage(playerAttack)
     }
   }
 
@@ -212,35 +210,50 @@ playerRunUp.src = "images/playerRunUp.png"
 
   function updateGame() {
     updatePlayerInfo(player);
+    frameCount = frameCounter(frameCount);
     player.yspeed = 0;
     player.xspeed = 0;
 
+
+    //player movement
     if(rightPressed){
       player.xspeed=player.maxSpeed;
     }
     else{
       if(leftPressed){
-        player.xspeed=-movementSpeed;
+        player.xspeed=-player.maxSpeed;
       }
       else{
         if(upPressed){
-          player.yspeed=-movementSpeed;
-          if(runUpFrame.x < 62){
-            runUpFrame.x += 30;
+          player.yspeed=-player.maxSpeed;
+          if(runUpFrame.x < 61){
+            if(frameCount%10 == 0){
+              runUpFrame.x += 30;
+              console.log("frameCount"+frameCount)
+            }
+          }
+          if(runUpFrame.x>60){
+            runUpFrame.x = 30;
           }
         }
         else{
           if(downPressed){
-            player.yspeed=movementSpeed;
+            player.yspeed=player.maxSpeed;
           }
         }
       }
     }
 
+    //enemy pacing
+    // horizontal pace
+    
+    if(pace < 200){
+      enemyXPos -= 1;
+      pace++;
+    }
 
 
-
-    // movementSpeed *= friction;
+    // player.maxSpeed *= friction;
 
     // if(jumpPressed){
     //   if(!jumping && !falling && canJump){
@@ -269,12 +282,6 @@ playerRunUp.src = "images/playerRunUp.png"
 
     playerXPos+=player.xspeed;
     playerYPos+=player.yspeed;
-    playerTop = (playerYPos-tileSize);
-    playerBottom = (playerYPos+tileSize);
-    playerleft = (playerXPos-tileSize);
-    playerRight = (playerXPos+tileSize);
-
-
 
     //scrolling
     if(playerXPos>(leftScroll+250)){
