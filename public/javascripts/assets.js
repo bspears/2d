@@ -5,8 +5,11 @@ var runUpFrame = {
 }
 playerRunUp.src = "images/playerRunUp.png"
 
-var playerAttackUp = new Image();
-var attackUpFrame = {
+var playerAttack = new Image();
+var attackFrame = {
   "x" : 0,
   "y" : 0
 }
+
+playerAttack.src ="images/sword.png"
+

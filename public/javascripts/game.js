@@ -94,6 +94,8 @@
   canvas.width = tileSize*levelCols;
   canvas.height = tileSize*levelRows;
 
+  port.scrollTop = 750;
+
   //Key mapping
   document.addEventListener('keydown', function(e){
     console.log(e.keyCode);
@@ -193,7 +195,20 @@
     }
 
     if(player.attacking){
-      // context.drawImage(playerAttack)
+      switch(player.direction){
+        case "up":
+          context.drawImage(playerAttack,attackFrame.x,attackFrame.y,30,30,playerXPos,playerYPos-30,30,30);
+          break;
+        case "right":
+          context.drawImage(playerAttack,attackFrame.x+30,attackFrame.y,30,30,playerXPos+30,playerYPos,30,30); 
+          break;
+        case "down":
+          context.drawImage(playerAttack,attackFrame.x+60,attackFrame.y,30,30,playerXPos,playerYPos+30,30,30); 
+          break;
+        case "left":
+          context.drawImage(playerAttack,attackFrame.x+90,attackFrame.y,30,30,playerXPos-30,playerYPos,30,30); 
+          break;     
+      }
     }
   }
 
@@ -248,8 +263,15 @@
     // horizontal pace
     
     if(pace < 200){
-      enemyXPos -= 1;
+      enemy.xspeed = -1;
       pace++;
+    }
+    else if(pace >= 200 && pace < 400){
+      enemy.xspeed = 1;
+      pace++
+    }
+    else if(pace == 400){
+      pace = 0
     }
 
 
@@ -282,9 +304,11 @@
 
     playerXPos+=player.xspeed;
     playerYPos+=player.yspeed;
+    enemyXPos+=enemy.xspeed;
+    enemyYPos+=enemy.yspeed
 
     //scrolling
-    if(playerXPos>(leftScroll+250)){
+    if(playerXPos>(leftScroll+750)){
       port.scrollLeft+=7;
       leftScroll+=7;
     }
@@ -295,13 +319,13 @@
       }
     }
 
-    if(playerYPos>port.scrollTop+200){
+    if(playerYPos>port.scrollTop+450){
       //Do stuff
       port.scrollTop+=7;
 
     }
     else{
-      if(playerYPos<port.scrollTop+200){
+      if(playerYPos<port.scrollTop+20){
         //do other stuff
         port.scrollTop-=7;
       }
@@ -373,16 +397,16 @@
 
       //bump backward
       // bumpBack(player,playerXPos,playerYPos);
-      if(player.xspeed>0){
+      if(player.xspeed>0 || enemy.xspeed < 0){
         playerXPos -=80;
       }
-      else if(player.xspeed<0){
+      else if(player.xspeed<0 || enemy.xspeed > 0){
         playerXPos +=80;
       }
-      else if(player.yspeed>0){
+      else if(player.yspeed>0 || enemy.yspeed < 0){
         playerYPos -=80;
       }
-      else if(player.yspeed<0){
+      else if(player.yspeed<0 || enemy.yspeed > 0){
         playerYPos +=80;
       }
 
@@ -396,7 +420,7 @@
         console.log("y%="+playerYPos/enemyYPos);
         console.log("x%="+playerXPos/enemyXPos);
         //up attack
-        if(player.direction == "up" && playerYPos/enemyYPos >= .84 && playerXPos/enemyXPos >= .91 && playerXPos/enemyXPos < 1.06){
+        if(player.direction == "up" && playerYPos/enemyYPos >= .84 && playerYPos/enemyYPos <= 1.2 && playerXPos/enemyXPos >= .91 && playerXPos/enemyXPos < 1.06){
           console.log('uphit');
           enemy.hp -= player.attack;
         }
@@ -416,7 +440,7 @@
           enemy.hp -= player.attack;
         }
 
-        player.attacking = false;
+        // player.attacking = false;
       }
 
       //kills
