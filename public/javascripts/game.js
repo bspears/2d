@@ -206,7 +206,7 @@
           context.drawImage(playerAttack,attackFrame.x+60,attackFrame.y,30,30,playerXPos,playerYPos+30,30,30); 
           break;
         case "left":
-          context.drawImage(playerAttack,attackFrame.x+90,attackFrame.y,30,30,playerXPos-30,playerYPos,30,30); 
+          context.drawImage(playerAttack,attackFrame.x+90,attackFrame.y,30,30,playerXPos-30 ,playerYPos,30,30); 
           break;     
       }
     }
