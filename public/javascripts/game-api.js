@@ -26,3 +26,13 @@ function frameCounter(frames){
 	}
 	return frames;
 }
+
+function forFrames(numberOfFrames){
+	if(numberOfFrames == 0){
+		return false;
+	}else if(numberOfFrames >= 1){
+		numberOfFrames -= 1;
+		console.log(numberOfFrames);
+		return forFrames(numberOfFrames);
+	}
+}
