@@ -66,10 +66,13 @@
     this.attack = attack;
     this.xpos = xpos;
     this.ypos = ypos;
+    this.YPos = row*tileSize;
+    this.XPos = col*=tileSize;
     enemies.push(this);
   }
 
   var enemy = new Enemy('enemy1',10,10,2,3,2);
+  var enemy = new Enemy('enemy2',12,12,2,3,2);
   console.log(enemies);
   // function createEnemies(quantity,enemyType,col,row,hp,maxSpeed,attack){
   //   for(i=0;i<quantity;i++){
@@ -181,10 +184,10 @@
     }
 
     //enemy1
+    context.fillStyle = '#ff3333';
     for(enemy in enemies){
       if(enemies[enemy].hp>0){
-        context.fillStyle = '#ff3333';
-        context.fillRect(enemyXPos,enemyYPos,tileSize,tileSize);
+        context.fillRect(enemies[enemy].XPos,enemies[enemy].YPos,tileSize,tileSize);
       }
     }  
     //player
@@ -415,29 +418,30 @@
 
     //attack
       if(player.attacking){
-        hitBox = tileSize*1.5;
         console.log('attack!');
-        console.log("y%="+playerYPos/enemyYPos);
-        console.log("x%="+playerXPos/enemyXPos);
-        //up attack
-        if(player.direction == "up" && playerYPos/enemyYPos >= .84 && playerYPos/enemyYPos <= 1.2 && playerXPos/enemyXPos >= .91 && playerXPos/enemyXPos < 1.06){
-          console.log('uphit');
-          enemy.hp -= player.attack;
-        }
-        //down attack
-        if(player.direction == "down" && playerYPos/enemyYPos < 1.2 && playerXPos/enemyXPos >= .91 && playerXPos/enemyXPos < 1.06){
-          console.log('downhit');
-          enemy.hp -= player.attack;
-        }
-        //right attack
-        if(player.direction == "right" && playerXPos/enemyYPos >= .83 && playerYPos/enemyYPos >= .95 && playerYPos/enemyYPos < 1.16){
-          console.log('righthit');
-          enemy.hp -= player.attack;
-        }
-        //left attack
-        if(player.direction == "left" && playerXPos/enemyXPos < 1.16 && playerYPos/enemyYPos >= .95 && playerYPos/enemyYPos < 1.16){
-          console.log('lefthit');
-          enemy.hp -= player.attack;
+        for(enemy in enemies){
+          console.log("y%="+playerYPos/enemies[enemy].YPos);
+          console.log("x%="+playerXPos/enemies[enemy].XPos);
+          //up attack
+          if(player.direction == "up" && playerYPos/enemies[enemy].YPos >= .84 && playerYPos/enemies[enemy].YPos <= 1.2 && playerXPos/enemies[enemy].XPos >= .91 && playerXPos/enemies[enemy].XPos < 1.06){
+            console.log('uphit');
+            enemies[enemy].hp -= player.attack;
+          }
+          //down attack
+          if(player.direction == "down" && playerYPos/enemies[enemy].YPos < 1.2 && playerXPos/enemies[enemy].XPos >= .91 && playerXPos/enemies[enemy].XPos < 1.06){
+            console.log('downhit');
+            enemies[enemy].hp -= player.attack;
+          }
+          //right attack
+          if(player.direction == "right" && playerXPos/enemies[enemy].YPos >= .83 && playerYPos/enemies[enemy].YPos >= .95 && playerYPos/enemies[enemy].YPos < 1.16){
+            console.log('righthit');
+            enemies[enemy].hp -= player.attack;
+          }
+          //left attack
+          if(player.direction == "left" && playerXPos/enemies[enemy].XPos < 1.16 && playerYPos/enemies[enemy].YPos >= .95 && playerYPos/enemies[enemy].YPos < 1.16){
+            console.log('lefthit');
+            enemies[enemy].hp -= player.attack;
+          }
         }
 
         // player.attacking = false;
