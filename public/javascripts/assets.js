@@ -13,3 +13,15 @@ var attackFrame = {
 
 playerAttack.src ="images/sword.png"
 
+
+var heartImg = new Image();
+heartImg.src = "images/playerLife.png"
+
+var keyImg = new Image();
+keyImg.src = "images/keyImg.png"
+
+var jewelImg = new Image();
+jewelImg.src = "images/jewel.png"
+
+var dirtImg = new Image();
+dirtImg.src = "images/dirt.png"

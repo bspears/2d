@@ -4,6 +4,7 @@
   var scrollTop = document.getElementById('viewport').scrollTop;
   var canvas = document.getElementById('canvas');
   var lives = document.getElementById('lives');
+  var playerInfo = document.getElementById('playerInfo');
   var context = canvas.getContext('2d');
   var levelCols = 300;
   var levelRows = 26;
@@ -23,37 +24,32 @@
   var friction = .8;
   var canJump = true;
   var imageObj = new Image();
-  var playerAvatar = document.getElementById('avatar');
-  var playerInfo = document.getElementById('playerInfo');
   var frameCount = 0;
   var pace = 0;
   var enemies = [];
+  var collectables = [];
+  var inventory = [];
+  var bank = 0;
+  var dirtBuilt = false;
 
 
   var player = {
-    "name" : "Rupert",
+    "name" : "Player",
     "lives" : 3,
     "maxLives" : 3,
     "jumping" : false,
-    "maxSpeed" : 4,
+    "maxSpeed" : 3,
     "row" : 23,
     "col" : 5,
     "xspeed" : 0,
     "yspeed" : 0,
     "attack" : 1,
     "direction" : "up",
+    "recovering" : false,
     "attacking" : false
   }
 
-  // var enemy = {
-  //   "col" : 10,
-  //   "row" : 10,
-  //   "hp" : 2,
-  //   "xspeed" : 0,
-  //   "yspeed" : 0,
-  //   "maxSpeed" : 2,
-  //   "attack" : 1
-  // }
+  //set up enemies
 
   var Enemy = function Enemy(enemyType,col,row,hp,maxSpeed,attack,xpos,ypos){
     this.enemyType = enemyType;
@@ -73,19 +69,29 @@
 
   var enemy = new Enemy('enemy1',10,10,2,3,2);
   var enemy = new Enemy('enemy2',12,12,2,3,2);
-  console.log(enemies);
-  // function createEnemies(quantity,enemyType,col,row,hp,maxSpeed,attack){
-  //   for(i=0;i<quantity;i++){
-  //     enemyType.push(
-  //       new Enemy(enemyType,col,row,hp,maxSpeed,attack);
-  //       )
-  //   }
-  // }
-  
-  // createEnemies(2,)  
-
+  console.log(enemies); 
   console.log(player);
 
+  //collectables
+
+  var Collectable = function Item(type,qty,img,available,col,row,name){
+    this.type = type;
+    this.qty = qty;
+    this.img = img;
+    this.col = col;
+    this.row = row;
+    this.YPos = row*tileSize;
+    this.XPos = col*=tileSize;
+    this.available = available;
+    collectables.push(this);
+  }
+
+  var heartcontainer = new Collectable('heart',2, heartImg,true,12,13);
+  var key = new Collectable('object',1,keyImg,true,15,15,'key');
+  var jewel = new Collectable('money',1,jewelImg,true,10,20)
+  console.log(key);
+
+  //positioning and sizing
   var playerYPos = player.row*tileSize;
   var playerXPos = player.col*=tileSize;
 
@@ -164,11 +170,10 @@
     }
 
     //dirt
-    context.fillStyle = '#fbe7aa';
     for(i=0;i<levelRows;i++){
       for(j=0;j<levelCols;j++){
         if(level[i][j]==0){
-          context.fillRect(j*tileSize,i*tileSize,tileSize,tileSize);
+          context.drawImage(dirtImg,0,0,30,30,j*tileSize,i*tileSize,30,30);
         }
       }
     }
@@ -195,6 +200,14 @@
       context.drawImage(playerRunUp,runUpFrame.x,runUpFrame.y,30,30,playerXPos,playerYPos,30,30);
     }
 
+    //items
+    for(item in collectables){
+      if(collectables[item].available){
+        context.drawImage(collectables[item].img,0,0,30,30,collectables[item].XPos,collectables[item].YPos,30,30);
+      }
+    }
+
+
     if(player.attacking){
       switch(player.direction){
         case "up":
@@ -207,11 +220,13 @@
           context.drawImage(playerAttack,attackFrame.x+60,attackFrame.y,30,30,playerXPos,playerYPos+30,30,30); 
           break;
         case "left":
-          context.drawImage(playerAttack,attackFrame.x+90,attackFrame.y,30,30,playerXPos-30 ,playerYPos,30,30); 
+          context.drawImage(playerAttack,attackFrame.x+90,attackFrame.y,30,30,playerXPos-30,playerYPos,30,30); 
           break;     
       }
     }
   }
+
+
 
   //Frame rate
   window.requestAnimFrame = (function(callback) {
@@ -227,6 +242,7 @@
   function updateGame() {
     //update player lives and stats
     updatePlayerInfo(player);
+    
     //60 frame loop
     frameCount = frameCounter(frameCount);
     player.yspeed = 0;
@@ -265,17 +281,19 @@
     //enemy pacing
     // horizontal pace
     
-    if(pace < 200){
-      enemy.xspeed = -1;
-      pace++;
-    }
-    else if(pace >= 200 && pace < 400){
-      enemy.xspeed = 1;
-      pace++
-    }
-    else if(pace == 400){
-      pace = 0
-    }
+    for(enemy in enemies){
+      if(pace < 200){
+        enemies[enemy].xspeed = -1;
+        pace++;
+      }
+      else if(pace >= 200 && pace < 400){
+        enemies[enemy].xspeed = 1;
+        pace++
+      }
+      else if(pace == 400){
+        pace = 0;
+      }
+    } 
 
 
     // player.maxSpeed *= friction;
@@ -307,8 +325,12 @@
 
     playerXPos+=player.xspeed;
     playerYPos+=player.yspeed;
-    enemyXPos+=enemy.xspeed;
-    enemyYPos+=enemy.yspeed
+
+    for(enemy in enemies){
+      enemies[enemy].XPos+=enemies[enemy].xspeed;
+      enemies[enemy].YPos+=enemies[enemy].yspeed
+
+    }
 
     //scrolling
     if(playerXPos>(leftScroll+750)){
@@ -390,68 +412,80 @@
       }
     }
 
+    //item pick up
+    for(item in collectables){
+      if(collectables[item].available && playerCollided(collectables[item],playerXPos,playerYPos)){
+        collectables[item].available = false;
+        switch(collectables[item].type){
+          case "heart":
+            addLife(player,collectables[item].qty);
+            break; 
+          case "object":
+            inventory.push(collectables[item]);
+            updateInventory(inventory);
+            break;
+          case "money":
+            updateBank(bank, collectables[item].qty);
+        }
+      }
+    }  
     //damage
-    if(playerYPos/enemyYPos >= .93 && playerYPos/enemyYPos < 1.07 &&
-      playerXPos/enemyXPos >= .93 && playerXPos/enemyXPos < 1.07
-       ){
-      //take damage
-      loseLife(player,enemy);
-      console.log(player.lives);
+    for(enemy in enemies){  
+      if(playerCollided(enemies[enemy],playerXPos,playerYPos && player.recovering === false)){
+        //take damage
+        loseLife(player,enemies[enemy]);
+        console.log(player.lives);
 
-      //bump backward
-      // bumpBack(player,playerXPos,playerYPos);
-      if(player.xspeed>0 || enemy.xspeed < 0){
-        playerXPos -=80;
+        //bump backward
+        // bumpBack(player,playerXPos,playerYPos);
+        if(player.xspeed>0 || enemy.xspeed < 0){
+          playerXPos -=80;
+        }
+        else if(player.xspeed<0 || enemy.xspeed > 0){
+          playerXPos +=80;
+        }
+        else if(player.yspeed>0 || enemy.yspeed < 0){
+          playerYPos -=80;
+        }
+        else if(player.yspeed<0 || enemy.yspeed > 0){
+          playerYPos +=80;
+        }
+        //safe period
       }
-      else if(player.xspeed<0 || enemy.xspeed > 0){
-        playerXPos +=80;
-      }
-      else if(player.yspeed>0 || enemy.yspeed < 0){
-        playerYPos -=80;
-      }
-      else if(player.yspeed<0 || enemy.yspeed > 0){
-        playerYPos +=80;
-      }
-
-      //safe period
-    }
-
+    }  
     //attack
       if(player.attacking){
         console.log('attack!');
         for(enemy in enemies){
-          console.log("y%="+playerYPos/enemies[enemy].YPos);
-          console.log("x%="+playerXPos/enemies[enemy].XPos);
+          console.log("y%="+ (playerYPos) +"enemy" + (enemies[enemy].YPos));
+          console.log("x%="+ (playerXPos) + (enemies[enemy].XPos));
           //up attack
-          if(player.direction == "up" && playerYPos/enemies[enemy].YPos >= .84 && playerYPos/enemies[enemy].YPos <= 1.2 && playerXPos/enemies[enemy].XPos >= .91 && playerXPos/enemies[enemy].XPos < 1.06){
+          if(player.direction == "up" && playerYPos <= enemies[enemy].YPos + 50 && playerYPos > enemies[enemy].YPos && playerXPos <= enemies[enemy].XPos + 15 && playerXPos >= enemies[enemy].XPos - 15 ){
             console.log('uphit');
             enemies[enemy].hp -= player.attack;
           }
           //down attack
-          if(player.direction == "down" && playerYPos/enemies[enemy].YPos < 1.2 && playerXPos/enemies[enemy].XPos >= .91 && playerXPos/enemies[enemy].XPos < 1.06){
+          if(player.direction == "down" && playerYPos >= enemies[enemy].YPos - 50 && playerYPos < enemies[enemy].YPos && playerXPos <= enemies[enemy].XPos + 15 && playerXPos >= enemies[enemy].XPos - 15 ){
             console.log('downhit');
             enemies[enemy].hp -= player.attack;
           }
-          //right attack
-          if(player.direction == "right" && playerXPos/enemies[enemy].YPos >= .83 && playerYPos/enemies[enemy].YPos >= .95 && playerYPos/enemies[enemy].YPos < 1.16){
+          // //right attack
+          if(player.direction == "right" && playerXPos >= enemies[enemy].YPos - 50 && playerXPos < enemies[enemy].XPos && playerYPos <= enemies[enemy].YPos + 15 && playerYPos >= enemies[enemy].YPos - 15 ){
             console.log('righthit');
             enemies[enemy].hp -= player.attack;
           }
-          //left attack
-          if(player.direction == "left" && playerXPos/enemies[enemy].XPos < 1.16 && playerYPos/enemies[enemy].YPos >= .95 && playerYPos/enemies[enemy].YPos < 1.16){
+          // //left attack
+          if(player.direction == "left" && playerXPos <= enemies[enemy].YPos + 50 && playerXPos > enemies[enemy].XPos && playerYPos <= enemies[enemy].YPos + 15 && playerYPos >= enemies[enemy].YPos - 15 ){
             console.log('lefthit');
             enemies[enemy].hp -= player.attack;
+          }
+          if(enemies[enemy].hp <= 0){
+          enemies[enemy].YPos = 0;
+          enemies[enemy].XPos = 0;
           }
         }
 
         // player.attacking = false;
-      }
-
-      //kills
-      if(enemy.hp <= 0){
-        enemyYPos = 0;
-        enemyXPos = 0;
-
       }
 
     baseCol = Math.floor(enemyXPos/tileSize);
