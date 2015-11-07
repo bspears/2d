@@ -25,3 +25,9 @@ jewelImg.src = "images/jewel.png"
 
 var dirtImg = new Image();
 dirtImg.src = "images/dirt.png"
+
+var monsterImg = new Image();
+monsterImg.src = "images/monster1.png"
+
+var chestImg = new Image();
+chestImg.src = "images/chest.png"

@@ -1,17 +1,23 @@
+body, p, span, div, img, ul, li, text {
+  margin: 0;
+  padding: 0; }
+
 body {
   font-family: 'VT323';
-  font-size: 30px; }
+  font-size: 30px;
+  background: black;
+  color: white; }
+
+.header {
+  margin: 0 auto;
+  width: 950px;
+  padding: 50px 0; }
 
 .viewport {
   margin: 0 auto;
   height: 480px;
   width: 950px;
   overflow: scroll; }
-
-.info {
-  text-align: right;
-  padding: 5px 20px;
-  margin-right: 150px; }
 
 .name {
   line-height: 30px;
@@ -23,10 +29,29 @@ body {
   vertical-align: baseline; }
 
 #playerInfo {
-  text-align: right;
+  text-align: left;
   list-style-type: none;
-  display: inline; }
+  display: block; }
   #playerInfo li {
     display: inline; }
+
+.info {
+  display: block;
+  width: 300px;
+  float: left; }
+
+#inventory {
+  list-style-type: none; }
+
+.inventory {
+  display: inline-block;
+  width: 400px;
+  float: right; }
+  .inventory li {
+    display: inline-block; }
+
+.bank {
+  float: left;
+  margin-right: 50px; }
 
 /*# sourceMappingURL=main.css.map */

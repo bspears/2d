@@ -1,6 +1,14 @@
 body{
   font-family: 'VT323';
   font-size: 30px;
+  background: black;
+  color: white;
+}
+
+.header {
+  margin: 0 auto;
+  width: 950px;
+  padding: 50px 0;
 }
 
 .viewport {
@@ -8,12 +16,6 @@ body{
   height: 480px;
   width: 950px;
   overflow: scroll;
-}
-
-.info {
-  text-align: right;
-  padding: 5px 20px;
-  margin-right: 150px;
 }
 
 .name {
@@ -28,10 +30,34 @@ body{
 }
 
 #playerInfo {
-  text-align: right;
+  text-align: left;
   list-style-type: none;
-  display: inline;
+  display: block;
   li{
     display: inline;
   }
+}
+
+.info {
+  display: block;
+  width: 300px;
+  float: left;
+}
+
+#inventory {
+  list-style-type: none;
+}
+
+.inventory{
+  display: inline-block;
+  width: 400px;
+  float: right;
+  li {
+    display: inline-block;
+  }
+}
+
+.bank {
+  float: left;
+  margin-right: 50px;
 }

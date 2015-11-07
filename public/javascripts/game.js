@@ -15,19 +15,12 @@
   var downPressed = false;
   var jumpPressed = false;
   var movementSpeed = 5;
-  var gravity = 20;
-  var jumpStart = 0;
-  var jumpHeight = 0;
-  var maxJump = 15;
-  var jumping = false;
-  var falling = false;
-  var friction = .8;
-  var canJump = true;
   var imageObj = new Image();
   var frameCount = 0;
   var pace = 0;
   var enemies = [];
   var collectables = [];
+  var chests = [];
   var inventory = [];
   var bank = 0;
   var dirtBuilt = false;
@@ -67,7 +60,7 @@
     enemies.push(this);
   }
 
-  var enemy = new Enemy('enemy1',10,10,2,3,2);
+  var enemy = new Enemy('enemy1',10,21,2,3,2);
   var enemy = new Enemy('enemy2',12,12,2,3,2);
   console.log(enemies); 
   console.log(player);
@@ -90,6 +83,27 @@
   var key = new Collectable('object',1,keyImg,true,15,15,'key');
   var jewel = new Collectable('money',1,jewelImg,true,10,20)
   console.log(key);
+
+  //chests
+
+  var Chest = function Chest(img,col,row,locked,contents){
+    this.img = img;
+    this.col = col;
+    this.row = row;
+    this.locked = locked;
+    this.contents = contents;
+    this.available = true;
+    this.col = col;
+    this.row = row;
+    this.YPos = row*tileSize;
+    this.XPos = col*=tileSize;
+    this.open = function(contents){
+      
+    }
+    chests.push(this);
+  };
+
+  var lootChest = new Chest(chestImg,10,18,true);
 
   //positioning and sizing
   var playerYPos = player.row*tileSize;
@@ -170,10 +184,11 @@
     }
 
     //dirt
+    context.fillStyle = '#f3d692';
     for(i=0;i<levelRows;i++){
       for(j=0;j<levelCols;j++){
         if(level[i][j]==0){
-          context.drawImage(dirtImg,0,0,30,30,j*tileSize,i*tileSize,30,30);
+          context.fillRect(j*tileSize,i*tileSize,tileSize,tileSize);
         }
       }
     }
@@ -192,7 +207,7 @@
     context.fillStyle = '#ff3333';
     for(enemy in enemies){
       if(enemies[enemy].hp>0){
-        context.fillRect(enemies[enemy].XPos,enemies[enemy].YPos,tileSize,tileSize);
+        context.drawImage(monsterImg,0,0,30,30,enemies[enemy].XPos,enemies[enemy].YPos,30,30);
       }
     }  
     //player
@@ -204,6 +219,13 @@
     for(item in collectables){
       if(collectables[item].available){
         context.drawImage(collectables[item].img,0,0,30,30,collectables[item].XPos,collectables[item].YPos,30,30);
+      }
+    }
+
+    //chests
+    for(chest in chests){
+      if(chests[chest].available){
+        context.drawImage(chests[chest].img,0,0,30,30,chests[chest].XPos,chests[chest].YPos,30,30);
       }
     }
 
@@ -431,26 +453,25 @@
     }  
     //damage
     for(enemy in enemies){  
-      if(playerCollided(enemies[enemy],playerXPos,playerYPos && player.recovering === false)){
+      if(playerCollided(enemies[enemy],playerXPos,playerYPos) && player.recovering === false){
         //take damage
         loseLife(player,enemies[enemy]);
-        console.log(player.lives);
 
         //bump backward
-        // bumpBack(player,playerXPos,playerYPos);
-        if(player.xspeed>0 || enemy.xspeed < 0){
-          playerXPos -=80;
-        }
-        else if(player.xspeed<0 || enemy.xspeed > 0){
+        if(player.xspeed < 0 || enemies[enemy].xspeed > 0 && player.yspeed == 0){
           playerXPos +=80;
         }
-        else if(player.yspeed>0 || enemy.yspeed < 0){
+        else if(player.xspeed > 0 || enemies[enemy].xspeed < 0 && player.yspeed == 0){
+          playerXPos -=80;
+        }
+        else if(player.yspeed > 0 || enemies[enemy].yspeed < 0){
           playerYPos -=80;
         }
-        else if(player.yspeed<0 || enemy.yspeed > 0){
+        else if(player.yspeed < 0 || enemies[enemy].yspeed > 0){
           playerYPos +=80;
         }
-        //safe period
+        console.log(player.xspeed)
+        console.log(enemies[enemy].xspeed)
       }
     }  
     //attack
@@ -487,6 +508,33 @@
 
         // player.attacking = false;
       }
+
+      if(player.attacking){
+        for(chest in chests){
+          //up attack
+          if(player.direction == "up" && playerYPos <= chests[chest].YPos + 50 && playerYPos > chests[chest].YPos && playerXPos <= chests[chest].XPos + 15 && playerXPos >= chests[chest].XPos - 15 ){
+            chests[chest].open();
+          }
+          //down attack
+          if(player.direction == "down" && playerYPos >= chests[chest].YPos - 50 && playerYPos < chests[chest].YPos && playerXPos <= chests[chest].XPos + 15 && playerXPos >= chests[chest].XPos - 15 ){
+            chests[chest].open();
+          }
+          // //right attack
+          if(player.direction == "right" && playerXPos >= chests[chest].YPos - 50 && playerXPos < chests[chest].XPos && playerYPos <= chests[chest].YPos + 15 && playerYPos >= chests[chest].YPos - 15 ){
+            chests[chest].open();
+          }
+          // //left attack
+          if(player.direction == "left" && playerXPos <= chests[chest].YPos + 50 && playerXPos > chests[chest].XPos && playerYPos <= chests[chest].YPos + 15 && playerYPos >= chests[chest].YPos - 15 ){
+            chests[chest].open();
+          }
+          if(chests[chest].hp <= 0){
+          chests[chest].YPos = 0;
+          chests[chest].XPos = 0;
+          }
+        }
+
+        // player.attacking = false;
+      }  
 
     baseCol = Math.floor(enemyXPos/tileSize);
     baseRow = Math.floor(enemyYPos/tileSize);
