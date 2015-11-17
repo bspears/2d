@@ -15,8 +15,8 @@ body {
 
 .viewport {
   margin: 0 auto;
-  height: 480px;
-  width: 950px;
+  height: 540px;
+  width: 960px;
   overflow: scroll; }
 
 .name {

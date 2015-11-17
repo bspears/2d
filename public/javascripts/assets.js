@@ -5,6 +5,27 @@ var runUpFrame = {
 }
 playerRunUp.src = "images/playerRunUp.png"
 
+var playerRunLeft = new Image();
+var runLeftFrame = {
+  "x" : 0,
+  "y" : 0
+}
+playerRunLeft.src = "images/playerRunLeft.png"
+
+var playerRunDown = new Image();
+var runDownFrame = {
+  "x" : 0,
+  "y" : 0
+}
+playerRunDown.src = "images/playerRunDown.png"
+
+var playerRunRight = new Image();
+var runRightFrame = {
+  "x" : 0,
+  "y" : 0
+}
+playerRunRight.src = "images/playerRunright.png"
+
 var playerAttack = new Image();
 var attackFrame = {
   "x" : 0,
