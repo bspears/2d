@@ -1,4 +1,5 @@
 (function() {
+  var thisLevel = loadLevel(level1);
   var port = document.getElementById('viewport');
   var leftScroll = document.getElementById('viewport').scrollLeft;
   var scrollTop = document.getElementById('viewport').scrollTop;
@@ -10,8 +11,8 @@
     "value": true
   }
   var recoverCount = 0;
-  var levelCols = 300;
-  var levelRows = 35;
+  // var thisLevel.cols = 300;
+  // var thisLevel.rows = 35;
   var tileSize = 30;
   var leftPressed = false;
   var rightPressed = false;
@@ -22,9 +23,9 @@
   var imageObj = new Image();
   var frameCount = 0;
   var pace = 0;
-  var enemies = [];
-  var collectables = [];
-  var chests = [];
+  var enemies = thisLevel.enemies;
+  var collectables = thisLevel.collectables;
+  var chests = thisLevel.chests;
   var inventory = [];
   var bank = 0;
   var dirtBuilt = false;
@@ -49,37 +50,37 @@
     "animate": true
   }
 
+  
   //set up enemies
 
   
 
-  var enemy = new Enemy(enemies,'enemy1',10,28,3,3,2,'key');
-  var enemy = new Enemy(enemies,'enemy2',12,12,3,3,2);
+  // var enemy = new Enemy(enemies,'enemy1',10,28,3,3,2,'key');
+  // var enemy = new Enemy(enemies,'enemy2',12,12,3,3,2);
   console.log(enemies); 
   console.log(player);
 
-  var heartcontainer = new Collectable(collectables,'heart',2, heartImg,true,12,13);
-  var key = new Collectable(collectables,'key',1,keyImg,true,15,15,'key');
-  var jewel = new Collectable(collectables,'money',1,jewelImg,true,10,20);
-  var jewel = new Collectable(collectables,'money',1,jewelImg,true,12,20);
+  // var heartcontainer = new Collectable(collectables,'heart',2, heartImg,true,12,13);
+  // var key = new Collectable(collectables,'key',1,keyImg,true,15,15,'key');
+  // var jewel = new Collectable(collectables,'money',1,jewelImg,true,10,20);
+  // var jewel = new Collectable(collectables,'money',1,jewelImg,true,12,20);
   console.log(player.keys.length + "key");
 
   //chests
 
-  var lootChest = new Chest(chests,chestImg,10,18,true,function(){
-    new Collectable(collectables,'heart',2, heartImg,true,12,18);
-  });
-  console.log(lootChest);
+  
 
   //positioning and sizing
   var playerYPos = player.row*tileSize;
   var playerXPos = player.col*=tileSize;
 
-  var enemyYPos = enemy.row*tileSize;
-  var enemyXPos = enemy.col*=tileSize;
+  for(enemy in enemies){
+    var enemyYPos = enemies[enemy].row*tileSize;
+    var enemyXPos = enemies[enemy].col*=tileSize;
+  }
 
-  canvas.width = tileSize*levelCols;
-  canvas.height = tileSize*levelRows;
+  canvas.width = tileSize*thisLevel.cols;
+  canvas.height = tileSize*thisLevel.rows;
 
   port.scrollTop = 1050;
 
@@ -147,23 +148,26 @@
 
 
   //build level
+
+  
+
   function renderLevel(){
     //walls
     context.clearRect(0,0, canvas.width, canvas.height);
-    context.fillStyle = '#dd9b46';
-    for(i=0;i<levelRows;i++){
-      for(j=0;j<levelCols;j++){
-        if(level[i][j]==1){
+    context.fillStyle = '#67aa46';
+    for(i=0;i<thisLevel.rows;i++){
+      for(j=0;j<thisLevel.cols;j++){
+        if(thisLevel.map[i][j]==1){
           context.fillRect(j*tileSize,i*tileSize,tileSize,tileSize);
         }
       }
     }
 
     //dirt
-    context.fillStyle = '#f3d692';
-    for(i=0;i<levelRows;i++){
-      for(j=0;j<levelCols;j++){
-        if(level[i][j]==0){
+    context.fillStyle = '#737622';
+    for(i=0;i<thisLevel.rows;i++){
+      for(j=0;j<thisLevel.cols;j++){
+        if(thisLevel.map[i][j]==0){
           context.fillRect(j*tileSize,i*tileSize,tileSize,tileSize);
         }
       }
@@ -171,9 +175,9 @@
 
     //water
     context.fillStyle = '#99e7ff';
-    for(i=0;i<levelRows;i++){
-      for(j=0;j<levelCols;j++){
-        if(level[i][j]==2){
+    for(i=0;i<thisLevel.rows;i++){
+      for(j=0;j<thisLevel.cols;j++){
+        if(thisLevel.map[i][j]==2){
           context.fillRect(j*tileSize,i*tileSize,tileSize,tileSize);
         }
       }
@@ -266,7 +270,7 @@
 
 
     //player movement
-    if(rightPressed){
+    if(rightPressed && player.attacking == false){
       player.xspeed=player.maxSpeed;
       if(runRightFrame.x < 61){
             if(frameCount%10 == 0){
@@ -279,7 +283,7 @@
           }
     }
     else{
-      if(leftPressed){
+      if(leftPressed && player.attacking == false){
         player.xspeed=-player.maxSpeed;
         if(runLeftFrame.x < 61){
             if(frameCount%10 == 0){
@@ -292,7 +296,7 @@
           }
       }
       else{
-        if(upPressed){
+        if(upPressed && player.attacking == false){
           player.yspeed=-player.maxSpeed;
           if(runUpFrame.x < 61){
             if(frameCount%10 == 0){
@@ -305,7 +309,7 @@
           }
         }
         else{
-          if(downPressed){
+          if(downPressed && player.attacking == false){
             player.yspeed=player.maxSpeed;
             if(runDownFrame.x < 61){
             if(frameCount%10 == 0){
@@ -377,30 +381,30 @@
 
     //Horzontal collision
     if(player.xspeed>0){
-      if((level[baseRow][baseCol+1] && !level[baseRow][baseCol]) ||
-         (level[baseRow+1][baseCol+1] && !level[baseRow+1][baseCol] && rowOverlap)){
+      if((thisLevel.map[baseRow][baseCol+1] && !thisLevel.map[baseRow][baseCol]) ||
+         (thisLevel.map[baseRow+1][baseCol+1] && !thisLevel.map[baseRow+1][baseCol] && rowOverlap)){
         playerXPos=baseCol*tileSize;
       }
     }
 
     if(player.xspeed<0){
-      if((!level[baseRow][baseCol+1] && level[baseRow][baseCol]) ||
-         (!level[baseRow+1][baseCol+1] && level[baseRow+1][baseCol] && rowOverlap)){
+      if((!thisLevel.map[baseRow][baseCol+1] && thisLevel.map[baseRow][baseCol]) ||
+         (!thisLevel.map[baseRow+1][baseCol+1] && thisLevel.map[baseRow+1][baseCol] && rowOverlap)){
         playerXPos=(baseCol+1)*tileSize;
       }
     }
 
     //Vertical collision
     if(player.yspeed>0){
-      if((level[baseRow+1][baseCol] && !level[baseRow][baseCol]) ||
-         (level[baseRow+1][baseCol+1] && !level[baseRow][baseCol+1] && colOverlap)){
+      if((thisLevel.map[baseRow+1][baseCol] && !thisLevel.map[baseRow][baseCol]) ||
+         (thisLevel.map[baseRow+1][baseCol+1] && !thisLevel.map[baseRow][baseCol+1] && colOverlap)){
         playerYPos = baseRow*tileSize;
       }
     }
 
     if(player.yspeed<0){
-      if((!level[baseRow+1][baseCol] && level[baseRow][baseCol]) ||
-         (!level[baseRow+1][baseCol+1] && level[baseRow][baseCol+1] && rowOverlap)){
+      if((!thisLevel.map[baseRow+1][baseCol] && thisLevel.map[baseRow][baseCol]) ||
+         (!thisLevel.map[baseRow+1][baseCol+1] && thisLevel.map[baseRow][baseCol+1] && rowOverlap)){
         playerYPos=(baseRow+1)*tileSize;
       }
     }
@@ -428,40 +432,41 @@
 
     //enemy collision
     //Horzontal collision
-
-    baseCol = Math.floor(enemyXPos/tileSize);
-    baseRow = Math.floor(enemyYPos/tileSize);
-    colOverlap = enemyXPos%tileSize;
-    rowOverlap = enemyYPos%tileSize;
-
-    if(enemy.xspeed>0){
-      if((level[baseRow][baseCol+1] && !level[baseRow][baseCol]) ||
-         (level[baseRow+1][baseCol+1] && !level[baseRow+1][baseCol] && rowOverlap)){
-        enemyXPos=baseCol*tileSize;
+    for(enemy in enemies){
+        baseCol = Math.floor(enemyXPos/tileSize);
+        baseRow = Math.floor(enemyYPos/tileSize);
+        colOverlap = enemyXPos%tileSize;
+        rowOverlap = enemyYPos%tileSize;
+    
+        if(enemy.xspeed>0){
+          if((thisLevel.map[baseRow][baseCol+1] && !thisLevel.map[baseRow][baseCol]) ||
+             (thisLevel.map[baseRow+1][baseCol+1] && !thisLevel.map[baseRow+1][baseCol] && rowOverlap)){
+            enemyXPos=baseCol*tileSize;
+          }
+        }
+    
+        if(enemy.xspeed<0){
+          if((!thisLevel.map[baseRow][baseCol+1] && thisLevel.map[baseRow][baseCol]) ||
+             (!thisLevel.map[baseRow+1][baseCol+1] && thisLevel.map[baseRow+1][baseCol] && rowOverlap)){
+            enemyXPos=(baseCol+1)*tileSize;
+          }
+        }
+    
+        //Vertical collision
+        if(enemy.yspeed>0){
+          if((thisLevel.map[baseRow+1][baseCol] && !thisLevel.map[baseRow][baseCol]) ||
+            (thisLevel.map[baseRow+1][baseCol+1] && !thisLevel.map[baseRow][baseCol+1] && colOverlap)){
+            enemyYPos = baseRow*tileSize;
+          }
+        }
+    
+        if(enemy.yspeed<0){
+          if((!thisLevel.map[baseRow+1][baseCol] && thisLevel.map[baseRow][baseCol]) ||
+            (!thisLevel.map[baseRow+1][baseCol+1] && thisLevel.map[baseRow][baseCol+1] && rowOverlap)){
+            enemyYPos=(baseRow+1)*tileSize;
+          }
+        }
       }
-    }
-
-    if(enemy.xspeed<0){
-      if((!level[baseRow][baseCol+1] && level[baseRow][baseCol]) ||
-         (!level[baseRow+1][baseCol+1] && level[baseRow+1][baseCol] && rowOverlap)){
-        enemyXPos=(baseCol+1)*tileSize;
-      }
-    }
-
-    //Vertical collision
-    if(enemy.yspeed>0){
-      if((level[baseRow+1][baseCol] && !level[baseRow][baseCol]) ||
-        (level[baseRow+1][baseCol+1] && !level[baseRow][baseCol+1] && colOverlap)){
-        enemyYPos = baseRow*tileSize;
-      }
-    }
-
-    if(enemy.yspeed<0){
-      if((!level[baseRow+1][baseCol] && level[baseRow][baseCol]) ||
-        (!level[baseRow+1][baseCol+1] && level[baseRow][baseCol+1] && rowOverlap)){
-        enemyYPos=(baseRow+1)*tileSize;
-      }
-    }
 
     //item pick up
     for(item in collectables){
@@ -479,6 +484,10 @@
           case "money":
             bank = updateBank(bank, collectables[item].qty);
         }
+        if(collectables[item].name == 'end'){
+          thisLevel = loadLevel(level2)
+          console.log('end level')
+        } 
       }
     }  
 
@@ -520,6 +529,7 @@
 
     if(player.lives<=0){
           runAnimation.value = false;
+          textBox('Game Over');
         } 
     //attack
       if(player.attacking && tick > 2 && tick < 4){
@@ -556,12 +566,12 @@
               console.log('special')
                 switch(thisEnemy.specialItem){
                   case "key":
-                  new Collectable(collectables,'key',1,keyImg,true,currentx,currenty);
+                  collectables.push(new Collectable('key',1,keyImg,true,currentx,currenty))
                   break
                 }
             }    
             else if(randomNumBetween(3) == 1){
-              dropItem(thisEnemy,collectables);
+              collectables.push(dropItem(thisEnemy))
             }
             removeFromArray(enemies,thisEnemy)
           }

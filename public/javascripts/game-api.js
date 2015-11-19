@@ -27,6 +27,18 @@ function addLife(character,qty){
 	}
 }
 
+function loadLevel(level){
+    var currentLevel = {
+      "map"          : level.map,
+      "cols"         : level.cols,
+      "rows"         : level.rows,
+      "enemies"      : level.enemies,
+      "collectables" : level.collectables,
+      "chests"       : level.chests,
+    }
+    return currentLevel
+  }
+
 function gameOver(){
   //show game over screen
 }
@@ -109,21 +121,21 @@ function chestOpen(chest,player){
   } 
 }
 
-function dropItem(obj,arrays){
+function dropItem(obj){
 	var dropChance = randomNumBetween(2);
 	switch(dropChance){
 		case 1:
-			return new Collectable(arrays,'heart',2, heartImg,true,obj.XPos/30,obj.YPos/30); 
+			return new Collectable('heart',2, heartImg,true,obj.XPos/30,obj.YPos/30); 
 			break
 		case 2:
-			return new Collectable(arrays,'money',1,jewelImg,true,obj.XPos/30,obj.YPos/30);	
+			return new Collectable('money',1,jewelImg,true,obj.XPos/30,obj.YPos/30);	
 	}
 }
 
 
 // constructors
 
-var Enemy = function Enemy(array,enemyType,col,row,hp,maxSpeed,attack,specialItem){
+var Enemy = function Enemy(enemyType,col,row,hp,maxSpeed,attack,specialItem){
     this.enemyType = enemyType;
     this.col = col;
     this.row = row;
@@ -135,10 +147,10 @@ var Enemy = function Enemy(array,enemyType,col,row,hp,maxSpeed,attack,specialIte
     this.YPos = row*tileSize;
     this.XPos = col*=tileSize;
     this.specialItem = specialItem;
-    array.push(this);
+    // array.push(this);
   }
 
-  var Collectable = function Item(array,type,qty,img,available,col,row,name){
+  var Collectable = function Item(type,qty,img,available,col,row,name){
     this.type = type;
     this.qty = qty;
     this.img = img;
@@ -147,10 +159,11 @@ var Enemy = function Enemy(array,enemyType,col,row,hp,maxSpeed,attack,specialIte
     this.YPos = row*tileSize;
     this.XPos = col*=tileSize;
     this.available = available;
-    array.push(this);
+    this.name = name;
+    // array.push(this);
   }
 
-  var Chest = function Chest(array,img,col,row,locked,contents){
+  var Chest = function Chest(img,col,row,locked,contents){
     this.img = img;
     this.col = col;
     this.row = row;
@@ -166,7 +179,7 @@ var Enemy = function Enemy(array,enemyType,col,row,hp,maxSpeed,attack,specialIte
                   contents();
                   contents = null;
     };
-    array.push(this);
+    // array.push(this);
   };
 
 
