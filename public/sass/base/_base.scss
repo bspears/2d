@@ -5,6 +5,15 @@ body{
   color: white;
 }
 
+.title {
+  text-align: center;
+  font-size: 3em;
+}
+
+.menu {
+  text-align: center;
+}
+
 .header {
   margin: 0 auto;
   width: 950px;
@@ -12,10 +21,22 @@ body{
 }
 
 .viewport {
+  position: relative;
   margin: 0 auto;
   height: 540px;
   width: 960px;
   overflow: scroll;
+}
+
+.canvas {
+  position: absolute;
+  top: 0;
+  left: 0;
+}
+
+.textBox {
+  width: 960px;
+  margin: 0 auto;
 }
 
 .name {
@@ -60,4 +81,8 @@ body{
 .bank {
   float: left;
   margin-right: 50px;
+}
+
+.noShow {
+  display:none;
 }

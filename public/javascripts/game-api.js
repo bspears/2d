@@ -2,6 +2,12 @@ var playerInfo = document.getElementById('playerInfo');
 var inventory = document.getElementById('inventory');
 var bank = document.getElementById('bank');
 var tileSize = 30;
+var textDisplay = {
+    "value": false
+};
+var runAnimation = {
+    "value": true
+  };
 
 
 function randomNumBetween(highestNumber){
@@ -28,34 +34,42 @@ function addLife(character,qty){
 }
 
 function loadLevel(level){
-    var currentLevel = {
-      "map"          : level.map,
-      "cols"         : level.cols,
-      "rows"         : level.rows,
-      "enemies"      : level.enemies,
-      "collectables" : level.collectables,
-      "chests"       : level.chests,
-    }
-    return currentLevel
+  var currentLevel = {
+    "map"          : level.map,
+    "cols"         : level.cols,
+    "rows"         : level.rows,
+    "playerCol"    : level.playerCol,
+    "playerRow"    : level.playerRow,
+    "enemies"      : level.enemies,
+    "collectables" : level.collectables,
+    "chests"       : level.chests,
+    "areas"        : level.areas,
+    "secrets"      : level.secrets, 
   }
+  return currentLevel
+}
 
 function gameOver(){
   //show game over screen
 }
 
 function updatePlayerInfo(player){
-    playerInfo.innerHTML = '<li class="name">'+player.name+'</li>';
-    for(i=0;i<player.lives;i++){
-      playerInfo.innerHTML += '<li class="icon"><img src="images/playerLife.png"></li>'
-    }
+  playerInfo.innerHTML = '<li class="name">'+player.name+'</li>';
+  for(i=0;i<player.lives;i++){
+    playerInfo.innerHTML += '<li class="icon"><img src="images/playerLife.png"></li>'
   }
+}
 
 function updateInventory(array){
 	for(i=0; i<array.length;i++){
 		inventory.innerHTML += '<li><img src="'+ array[i].img.src +'"></li>';
 		return array;
 	}
-}  
+} 
+
+function updateKeys(player){
+  keys.innerHTML = '<span><img src="images/keyImg.png"> x ' + player.keys.length + '</span>';
+} 
 
 function updateBank(target,value){
 	target += value; 
@@ -95,6 +109,8 @@ function playerCollided(object,xpos,ypos){
 	}
 }
 
+
+
 function animationFlash(obj,frameCounter){
 	if(frameCounter%2 == 0){
 		obj.animate = false;
@@ -115,9 +131,10 @@ function chestOpen(chest,player){
     chest.open();
     chest.empty = true;
     player.keys.pop();
+    console.log(player.keys.length)
   }
   else{
-    textBox('You need a key to open this.');
+    textBox('It\'s locked. Maybe there is a key close by.');
   } 
 }
 
@@ -170,8 +187,6 @@ var Enemy = function Enemy(enemyType,col,row,hp,maxSpeed,attack,specialItem){
     this.locked = locked;
     this.contents = contents;
     this.available = true;
-    this.col = col;
-    this.row = row;
     this.YPos = row*tileSize;
     this.XPos = col*=tileSize;
     this.empty = false;
@@ -182,16 +197,62 @@ var Enemy = function Enemy(enemyType,col,row,hp,maxSpeed,attack,specialItem){
     // array.push(this);
   };
 
+  var SecretDoor = function SecretDoor(img,col,row,available,name){
+    this.img = img;
+    this.col = col;
+    this.row = row;
+    this.name = name;
+    this.YPos = row*tileSize;
+    this.XPos = col*=tileSize;
+    this.available = available;
+    this.action = function(){
+      this.available = false;
+    }
+    console.log(this);
+  }
+
+
+function pause(){
+  runAnimation.value = false;
+}
+
+function unPause(){
+  runAnimation.value = true;
+}
 
 // text box
 function textBox(text){
 	var box = document.getElementById('textBox');
 	box.innerHTML = '<div class="textBoxContent">' + text + '</div>';
+  pause();
+  textDisplay.value = true;
 }
 
 function clearTextBox(){
 	var box = document.getElementById('textBox');
 	box.innerHTML = '';
+  unPause();
+  textDisplay.value = false;
 }
+
+function action(obj,player,playerXPos,playerYPos){
+  //up action
+  if(player.direction == "up" && playerYPos <= obj.YPos + 50 && playerYPos > obj.YPos && playerXPos <= obj.XPos + 15 && playerXPos >= obj.XPos - 15 ){
+    obj.action();  
+  }
+  //down action
+  if(player.direction == "down" && playerYPos >= obj.YPos - 50 && playerYPos < obj.YPos && playerXPos <= obj.XPos + 15 && playerXPos >= obj.XPos - 15 ){
+    obj.action(); 
+  }
+  // //right action
+  if(player.direction == "right" && playerXPos >= obj.YPos - 50 && playerXPos < obj.XPos && playerYPos <= obj.YPos + 15 && playerYPos >= obj.YPos - 15 ){
+    obj.action(); 
+  }
+  // //left action
+  if(player.direction == "left" && playerXPos <= obj.YPos + 50 && playerXPos > obj.XPos && playerYPos <= obj.YPos + 15 && playerYPos >= obj.YPos - 15 ){
+    obj.action(); 
+    }
+}
+
 
 
