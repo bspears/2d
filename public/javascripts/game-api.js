@@ -44,6 +44,7 @@ function loadLevel(level){
     "collectables" : level.collectables,
     "chests"       : level.chests,
     "areas"        : level.areas,
+    "doors"        : level.doors,
     "secrets"      : level.secrets, 
   }
   return currentLevel
@@ -100,13 +101,16 @@ function forFrames(numberOfFrames){
 
 function playerCollided(object,xpos,ypos){
   //up and down
-  if(ypos - 29 <= object.YPos && ypos + 29 > object.YPos  && xpos + 29 >= object.XPos && xpos - 29 <= object.XPos){
+  if(ypos - 27 <= object.YPos && ypos + 27 > object.YPos  && xpos + 27 >= object.XPos && xpos - 27 <= object.XPos){
 		return true;
 	}
 	//sides
-	if(xpos - 29 <= object.XPos && xpos + 29 > object.XPos  && ypos + 29 >= object.YPos && ypos - 29 <= object.YPos){
+	if(xpos - 27 <= object.XPos && xpos + 27 > object.XPos  && ypos + 27 >= object.YPos && ypos - 27 <= object.YPos){
 		return true;
 	}
+  else{
+    return false;
+  }
 }
 
 
@@ -131,6 +135,7 @@ function chestOpen(chest,player){
     chest.open();
     chest.empty = true;
     player.keys.pop();
+    updateKeys(player);
     console.log(player.keys.length)
   }
   else{
@@ -208,6 +213,17 @@ var Enemy = function Enemy(enemyType,col,row,hp,maxSpeed,attack,specialItem){
     this.action = function(){
       this.available = false;
     }
+    console.log(this);
+  }
+
+  var Door = function Door(area,col,row,returnX,returnY){
+    this.col = col;
+    this.row = row;
+    this.area = area;
+    this.YPos = row*tileSize;
+    this.XPos = col*=tileSize;
+    this.returnX = returnX;
+    this.returnY = returnY;
     console.log(this);
   }
 

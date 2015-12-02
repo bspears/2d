@@ -1,6 +1,6 @@
 (function() {
   
-  var thisLevel = loadLevel(level1);
+  var thisLevel = loadLevel(levels.level1);
   var port = document.getElementById('viewport');
   var leftScroll = document.getElementById('viewport').scrollLeft;
   var scrollTop = document.getElementById('viewport').scrollTop;
@@ -48,9 +48,6 @@
     "keys" : [],
     "animate": true
   }
-  console.log(thisLevel.playerCol);
-
-
 
   //positioning and sizing
   var playerYPos = player.row*tileSize;
@@ -61,12 +58,9 @@
     var enemyXPos = thisLevel.enemies[enemy].col*=tileSize;
   }
 
-  canvas.width = tileSize*thisLevel.cols;
-  canvas.height = tileSize*thisLevel.rows;
-  canvas2.width = tileSize*thisLevel.cols;
-  canvas2.height = tileSize*thisLevel.rows;
+  
 
-  port.scrollTop = 1050;
+  port.scrollTop = 2150;
 
   //Key mapping
   document.addEventListener('keydown', function(e){
@@ -143,6 +137,11 @@
   //build level
 
   function renderBackground(){
+    canvas.width = tileSize*thisLevel.cols;
+    canvas.height = tileSize*thisLevel.rows;
+    canvas2.width = tileSize*thisLevel.cols;
+    canvas2.height = tileSize*thisLevel.rows;
+
     context2.clearRect(0,0, canvas2.width, canvas2.height);
 
     //water
@@ -191,6 +190,10 @@
   }
 
   function reRender(){
+    canvas.width = tileSize*thisLevel.cols;
+    canvas.height = tileSize*thisLevel.rows;
+    canvas2.width = tileSize*thisLevel.cols;
+    canvas2.height = tileSize*thisLevel.rows;
     context2.clearRect(0,0, canvas2.width, canvas2.height);
 
     //water
@@ -408,24 +411,24 @@
     }
 
     //scrolling
-    if(playerXPos>(leftScroll+750)){
-      port.scrollLeft+=7;
-      leftScroll+=7;
+    if(playerXPos>(leftScroll+550) && port.scrollLeft < canvas.width){
+      port.scrollLeft+=3;
+      leftScroll+=3;
     }
     else{
-      if(playerXPos<(leftScroll+50)){
-        port.scrollLeft-=7;
-        leftScroll-=7;
+      if(playerXPos<(leftScroll+500) && port.scrollLeft > 0){
+        port.scrollLeft-=3;
+        leftScroll-=3;
       }
     }
 
-    if(playerYPos>port.scrollTop+450){
-      port.scrollTop+=7;
+    if(playerYPos>port.scrollTop+250){
+      port.scrollTop+=3;
     }
 
     else{
-      if(playerYPos<port.scrollTop+20){
-        port.scrollTop-=7;
+      if(playerYPos<port.scrollTop+200){
+        port.scrollTop-=3;
       }
     }
 
@@ -540,7 +543,7 @@
             bank = updateBank(bank, thisLevel.collectables[item].qty);
         }
         if(thisLevel.collectables[item].name == 'end'){
-          thisLevel = loadLevel(level2);
+          thisLevel = loadLevel(levels.level2);
           reRender();
           playerXPos = thisLevel.playerCol*tileSize;
           playerYPos = thisLevel.playerRow*tileSize;
@@ -678,6 +681,19 @@
       }
     }
 
+    for(door in thisLevel.doors){
+      var thisDoor = thisLevel.doors[door];
+      if(playerCollided(thisDoor,playerXPos,playerYPos)){
+        thisLevel = loadLevel(levels[thisDoor.area]);
+        playerXPos = thisDoor.returnX*tileSize;
+        playerYPos = thisDoor.returnY*tileSize;
+        reRender();
+        console.log(thisLevel)
+        console.log(thisDoor)
+      }
+      console.log('test2')
+    }
+
     renderLevel();
     if(backgroundRender == false){
       renderBackground();
@@ -690,8 +706,8 @@
       });
     }
   }
-  console.log(renderBackground)
 
+  console.log(thisLevel);
   updateGame();
   // renderBackground();
 
