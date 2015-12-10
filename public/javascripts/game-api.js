@@ -41,6 +41,7 @@ function loadLevel(level){
     "playerCol"    : level.playerCol,
     "playerRow"    : level.playerRow,
     "enemies"      : level.enemies,
+    "npcs"         : level.npcs,
     "collectables" : level.collectables,
     "chests"       : level.chests,
     "areas"        : level.areas,
@@ -99,13 +100,15 @@ function forFrames(numberOfFrames){
 	}
 }
 
-function playerCollided(object,xpos,ypos){
+function playerCollided(object,xpos,ypos,range){
+  var distance = 27;
+  if(range){distance += range}
   //up and down
-  if(ypos - 27 <= object.YPos && ypos + 27 > object.YPos  && xpos + 27 >= object.XPos && xpos - 27 <= object.XPos){
+  if(ypos - distance <= object.YPos && ypos + distance > object.YPos  && xpos + distance >= object.XPos && xpos - distance <= object.XPos){
 		return true;
 	}
 	//sides
-	if(xpos - 27 <= object.XPos && xpos + 27 > object.XPos  && ypos + 27 >= object.YPos && ypos - 27 <= object.YPos){
+	if(xpos - distance <= object.XPos && xpos + distance > object.XPos  && ypos + distance >= object.YPos && ypos - distance <= object.YPos){
 		return true;
 	}
   else{
@@ -113,7 +116,9 @@ function playerCollided(object,xpos,ypos){
   }
 }
 
-
+function withinRange(obj1,obj2,range){
+  
+}
 
 function animationFlash(obj,frameCounter){
 	if(frameCounter%2 == 0){
@@ -158,74 +163,85 @@ function dropItem(obj){
 // constructors
 
 var Enemy = function Enemy(enemyType,col,row,hp,maxSpeed,attack,specialItem){
-    this.enemyType = enemyType;
-    this.col = col;
-    this.row = row;
-    this.hp = hp;
-    this.xspeed = 0;
-    this.yspeed = 0;
-    this.maxSpeed = maxSpeed;
-    this.attack = attack;
-    this.YPos = row*tileSize;
-    this.XPos = col*=tileSize;
-    this.specialItem = specialItem;
-    // array.push(this);
-  }
+  this.enemyType   = enemyType;
+  this.col         = col;
+  this.row         = row;
+  this.hp          = hp;
+  this.xspeed      = 0;
+  this.yspeed      = 0;
+  this.maxSpeed    = maxSpeed;
+  this.attack      = attack;
+  this.YPos        = row*tileSize;
+  this.XPos        = col*=tileSize;
+  this.specialItem = specialItem;
+}
 
-  var Collectable = function Item(type,qty,img,available,col,row,name){
-    this.type = type;
-    this.qty = qty;
-    this.img = img;
-    this.col = col;
-    this.row = row;
-    this.YPos = row*tileSize;
-    this.XPos = col*=tileSize;
-    this.available = available;
-    this.name = name;
-    // array.push(this);
+var Npc = function Npc(img,col,row,available,text,item){
+  this.img       = img;
+  this.col       = col;
+  this.row       = row;
+  this.available = available;
+  this.YPos      = row*tileSize;
+  this.XPos      = col*tileSize;
+  this.text      = text;
+  this.item      = item;
+  this.action    = function(){
+    textBox(this.text);
   }
+}
 
-  var Chest = function Chest(img,col,row,locked,contents){
-    this.img = img;
-    this.col = col;
-    this.row = row;
-    this.locked = locked;
-    this.contents = contents;
-    this.available = true;
-    this.YPos = row*tileSize;
-    this.XPos = col*=tileSize;
-    this.empty = false;
-    this.open = function(){
-                  contents();
-                  contents = null;
-    };
-    // array.push(this);
+var Collectable = function Item(type,qty,img,available,col,row,name){
+  this.type      = type;
+  this.qty       = qty;
+  this.img       = img;
+  this.col       = col;
+  this.row       = row;
+  this.YPos      = row*tileSize;
+  this.XPos      = col*=tileSize;
+  this.available = available;
+  this.name      = name;
+}
+
+var Chest = function Chest(img,col,row,locked,contents){
+  this.img       = img;
+  this.col       = col;
+  this.row       = row;
+  this.locked    = locked;
+  this.contents  = contents;
+  this.available = true;
+  this.YPos      = row*tileSize;
+  this.XPos      = col*=tileSize;
+  this.empty     = false;
+  this.open      = function(){
+    contents();
+    contents = null;
   };
+};
 
-  var SecretDoor = function SecretDoor(img,col,row,available,name){
-    this.img = img;
-    this.col = col;
-    this.row = row;
-    this.name = name;
-    this.YPos = row*tileSize;
-    this.XPos = col*=tileSize;
-    this.available = available;
-    this.action = function(){
-      this.available = false;
-    }
-    console.log(this);
+var SecretDoor = function SecretDoor(img,col,row,available,name){
+  this.img = img;
+  this.col = col;
+  this.row = row;
+  this.name = name;
+  this.YPos = row*tileSize;
+  this.XPos = col*=tileSize;
+  this.available = available;
+  this.action = function(){
+    this.available = false;
   }
+  console.log(this);
+}
 
-  var Door = function Door(area,col,row,returnX,returnY){
-    this.col = col;
-    this.row = row;
-    this.area = area;
-    this.YPos = row*tileSize;
-    this.XPos = col*=tileSize;
-    this.returnX = returnX;
-    this.returnY = returnY;
-    console.log(this);
-  }
+var Door = function Door(area,col,row,returnX,returnY){
+  this.col = col;
+  this.row = row;
+  this.area = area;
+  this.YPos = row*tileSize;
+  this.XPos = col*=tileSize;
+  this.returnX = returnX;
+  this.returnY = returnY;
+  console.log(this);
+}
 
 
 function pause(){
@@ -261,13 +277,13 @@ function action(obj,player,playerXPos,playerYPos){
     obj.action(); 
   }
   // //right action
-  if(player.direction == "right" && playerXPos >= obj.YPos - 50 && playerXPos < obj.XPos && playerYPos <= obj.YPos + 15 && playerYPos >= obj.YPos - 15 ){
+  if(player.direction == "right" && playerXPos >= obj.XPos - 50 && playerXPos < obj.XPos && playerYPos <= obj.YPos + 15 && playerYPos >= obj.YPos - 15 ){
     obj.action(); 
   }
   // //left action
-  if(player.direction == "left" && playerXPos <= obj.YPos + 50 && playerXPos > obj.XPos && playerYPos <= obj.YPos + 15 && playerYPos >= obj.YPos - 15 ){
+  if(player.direction == "left" && playerXPos <= obj.XPos + 50 && playerXPos > obj.XPos && playerYPos <= obj.YPos + 15 && playerYPos >= obj.YPos - 15 ){
     obj.action(); 
-    }
+  }
 }
 
 
