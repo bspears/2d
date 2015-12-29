@@ -1,11 +1,13 @@
 (function() {
   
   var thisLevel = loadLevel(levels.level1);
+  var thisBackground = document.getElementById('background');
   var port = document.getElementById('viewport');
   var leftScroll = document.getElementById('viewport').scrollLeft;
   var scrollTop = document.getElementById('viewport').scrollTop;
   var canvas = document.getElementById('canvas');
   var canvas2 = document.getElementById('animation');
+  var gameState = {'value':'play'};
   var lives = document.getElementById('lives');
   var playerInfo = document.getElementById('playerInfo');
   var context = canvas.getContext('2d');
@@ -31,38 +33,40 @@
 
   
   var player = {
-    "name" : "Player",
-    "lives" : 3,
-    "maxLives" : 3,
-    "jumping" : false,
-    "maxSpeed" : 3,
-    "row" : thisLevel.playerRow,
-    "col" : thisLevel.playerCol,
-    "xspeed" : 0,
-    "yspeed" : 0,
-    "attack" : 1,
-    "direction" : "up",
+    "name"       : "Player",
+    "lives"      : 3,
+    "maxLives"   : 3,
+    "jumping"    : false,
+    "maxSpeed"   : 3,
+    "canMove"    : true,
+    "row"        : thisLevel.playerRow,
+    "col"        : thisLevel.playerCol,
+    "xspeed"     : 0,
+    "yspeed"     : 0,
+    "attack"     : 1,
+    "direction"  : "up",
     "recovering" : false,
-    "attacking" : false,
-    "equiped" : "sword",
-    "keys" : [],
-    "animate": true
+    "attacking"  : false,
+    "fishing"    : false,
+    "equiped"    : "stick",
+    "keys"       : [],
+    "inventory"  : [{"name" : "stick", "img" : stickThumbImg}],
+    "animate"    : true
   }
 
   //positioning and sizing
   var playerYPos = player.row*tileSize;
   var playerXPos = player.col*=tileSize;
 
+
   for(enemy in thisLevel.enemies){
     var enemyYPos = thisLevel.enemies[enemy].row*tileSize;
     var enemyXPos = thisLevel.enemies[enemy].col*=tileSize;
   }
   
-  port.scrollTop = playerYPos;
-
   //Key mapping
   document.addEventListener('keydown', function(e){
-    console.log(e.keyCode);
+    // console.log(e.keyCode);
     switch(e.keyCode){
       case 65:
         leftPressed = true;
@@ -98,7 +102,7 @@
           updateGame();
         }
         else{
-          actionPressed = true;6
+          actionPressed = true;
         }
         break;  
     }
@@ -134,12 +138,14 @@
   //build level
 
   function renderBackground(){
+    background.innerHTML = '<img src="images/'+ thisLevel.background +'">'
     canvas.width   = tileSize*thisLevel.cols;
     canvas.height  = tileSize*thisLevel.rows;
     canvas2.width  = tileSize*thisLevel.cols;
     canvas2.height = tileSize*thisLevel.rows;
     port.scrollTop = playerYPos;
-
+    port.scrollLeft = playerXPos-500;
+    updateInventory(player.inventory);
     context2.clearRect(0,0, canvas2.width, canvas2.height);
 
     //water
@@ -164,6 +170,28 @@
       }
     }
 
+    //bushes
+    bushImg.onload = function(){
+      for(i=0;i<thisLevel.rows;i++){
+        for(j=0;j<thisLevel.cols;j++){
+          if(thisLevel.map[i][j]==4){
+            context2.drawImage(bushImg,0,0,30,30,j*tileSize,i*tileSize,tileSize,tileSize);
+          }
+        }
+      }
+    }
+
+    //forrest tree
+    forrestTree1Img.onload = function(){
+      for(i=0;i<thisLevel.rows;i++){
+        for(j=0;j<thisLevel.cols;j++){
+          if(thisLevel.map[i][j]==5){
+            context2.drawImage(forrestTree1Img,0,30,30,60,j*tileSize,i*tileSize,tileSize,60);
+          }
+        }
+      }
+    }
+
     //rockyTops
     hillTopImg.onload = function(){
       for(i=0;i<thisLevel.rows;i++){
@@ -174,26 +202,18 @@
         }
       }
     }
-
-    //dirt
-    dirtImg.onload = function(){
-      for(i=0;i<thisLevel.rows;i++){
-        for(j=0;j<thisLevel.cols;j++){
-          if(thisLevel.map[i][j]==0){
-            context2.drawImage(dirtImg,0,0,30,30,j*tileSize,i*tileSize,tileSize,tileSize);
-          }
-        }
-      }
-    }  
   }
 
   function reRender(){
+    background.innerHTML = '<img src="images/'+ thisLevel.background +'">'
+    port.scrollTop = playerYPos;
+    port.scrollLeft = playerXPos-500;
+    console.log(playerXPos+"x"+playerYPos+"y")
+    console.log(port.scrollLeft+"x"+port.scrollTop+"y")
     canvas.width   = tileSize*thisLevel.cols;
     canvas.height  = tileSize*thisLevel.rows;
     canvas2.width  = tileSize*thisLevel.cols;
     canvas2.height = tileSize*thisLevel.rows;
-    port.scrollTop = playerYPos;
-
     context2.clearRect(0,0, canvas2.width, canvas2.height);
 
     //water
@@ -204,7 +224,6 @@
         }
       }
     }
-    
 
     //walls
     for(i=0;i<thisLevel.rows;i++){
@@ -214,7 +233,24 @@
         }
       }
     }
-    
+
+    //bushes
+    for(i=0;i<thisLevel.rows;i++){
+      for(j=0;j<thisLevel.cols;j++){
+        if(thisLevel.map[i][j]==4){
+          context2.drawImage(bushImg,0,0,30,30,j*tileSize,i*tileSize,tileSize,tileSize);
+        }
+      }
+    }
+
+    //forrest tree
+    for(i=0;i<thisLevel.rows;i++){
+      for(j=0;j<thisLevel.cols;j++){
+        if(thisLevel.map[i][j]==5){
+          context2.drawImage(forrestTree1Img,0,0,30,30,j*tileSize,i*tileSize,tileSize,tileSize);
+        }
+      }
+    }
 
     //rockyTops
     for(i=0;i<thisLevel.rows;i++){
@@ -224,19 +260,10 @@
         }
       }
     }
-    
-    //dirt
-    for(i=0;i<thisLevel.rows;i++){
-      for(j=0;j<thisLevel.cols;j++){
-        if(thisLevel.map[i][j]==0){
-          context2.drawImage(dirtImg,0,0,30,30,j*tileSize,i*tileSize,tileSize,tileSize);
-        }
-      }
-    }
+
   }
 
   function renderLevel(){
-
     context.clearRect(0,0, canvas.width, canvas.height);
 
     //enemy1
@@ -249,12 +276,12 @@
     //npc
     for(person in thisLevel.npcs){
       if(thisLevel.npcs[person].available){
-        context.drawImage(monsterImg,0,0,30,30,thisLevel.npcs[person].XPos,thisLevel.npcs[person].YPos,30,30);
+        context.drawImage(thisLevel.npcs[person].img,0,0,30,30,thisLevel.npcs[person].XPos,thisLevel.npcs[person].YPos,30,30);
       }
     } 
 
     //player
-    if(player.animate){
+    if(player.animate && player.attacking == false){
       if(player.direction == "up"){
         context.drawImage(playerRunUp,runUpFrame.x,runUpFrame.y,30,30,playerXPos,playerYPos,30,30); 
       }
@@ -266,6 +293,20 @@
       }
       if(player.direction == "left"){
         context.drawImage(playerRunLeft,runLeftFrame.x,runLeftFrame.y,30,30,playerXPos,playerYPos,30,30); 
+      }
+    }
+    else if(player.attacking || player.fishing){
+      if(player.direction == "up"){
+        context.drawImage(attackMove,0,0,30,30,playerXPos,playerYPos,30,30); 
+      }
+      if(player.direction == "down"){
+        context.drawImage(attackMove,60,00,30,30,playerXPos,playerYPos,30,30); 
+      }
+      if(player.direction == "right"){
+        context.drawImage(attackMove,30,00,30,30,playerXPos,playerYPos,30,30); 
+      }
+      if(player.direction == "left"){
+        context.drawImage(attackMove,90,00,30,30,playerXPos,playerYPos,30,30); 
       }
     }
 
@@ -299,7 +340,7 @@
             break;
           case "right":
             context.drawImage(playerAttack,attackFrame.x+30,attackFrame.y,30,30,playerXPos+30,playerYPos,30,30);
-            tick += 1; 
+            tick += 1;
             break;
           case "down":
             context.drawImage(playerAttack,attackFrame.x+60,attackFrame.y,30,30,playerXPos,playerYPos+30,30,30);
@@ -308,26 +349,41 @@
           case "left":
             context.drawImage(playerAttack,attackFrame.x+90,attackFrame.y,30,30,playerXPos-30,playerYPos,30,30);
             tick += 1; 
-            break;     
+            break;
         }
       }
       else if(tick <= 7){
         tick += 1;
       }
     }
+
+    if(player.fishing){
+      switch(player.direction){
+        case "up":
+          context.drawImage(playerAttack,attackFrame.x,attackFrame.y,30,30,playerXPos,playerYPos-30,30,30);
+          break;
+        case "right":
+          context.drawImage(playerAttack,attackFrame.x+30,attackFrame.y,30,30,playerXPos+30,playerYPos,30,30);
+          break;
+        case "down":
+          context.drawImage(playerAttack,attackFrame.x+60,attackFrame.y,30,30,playerXPos,playerYPos+30,30,30);
+          break;
+        case "left":
+          context.drawImage(playerAttack,attackFrame.x+90,attackFrame.y,30,30,playerXPos-30,playerYPos,30,30);
+          break;
+      }   
+    }
   }
 
   //Frame rate 
-    window.requestAnimFrame = (function(callback) {
-    return window.requestAnimFrame ||
-           window.webkitRequestAnimationFrame ||
-           window.mozRequestAnimationFrame ||
-           function(callback) {
-            window.setTimeout(callback, 1000/60);
-          };
-    }) ();
-
-    console.log(thisLevel)
+  window.requestAnimFrame = (function(callback) {
+  return window.requestAnimFrame ||
+         window.webkitRequestAnimationFrame ||
+         window.mozRequestAnimationFrame ||
+         function(callback) {
+          window.setTimeout(callback, 1000/60);
+        };
+  }) ();
 
   function updateGame() {
     //update player lives and stats
@@ -339,7 +395,7 @@
     player.xspeed = 0;
 
     //player movement
-    if(rightPressed && player.attacking == false){
+    if(rightPressed && player.attacking == false && player.fishing == false){
       player.xspeed=player.maxSpeed;
       if(runRightFrame.x < 61){
         if(frameCount%10 == 0){
@@ -351,7 +407,7 @@
       }
     }
     else{
-      if(leftPressed && player.attacking == false){
+      if(leftPressed && player.attacking == false && player.fishing == false){
         player.xspeed=-player.maxSpeed;
         if(runLeftFrame.x < 61){
           if(frameCount%10 == 0){
@@ -363,7 +419,7 @@
         }
       }
       else{
-        if(upPressed && player.attacking == false){
+        if(upPressed && player.attacking == false && player.fishing == false){
           player.yspeed=-player.maxSpeed;
           if(runUpFrame.x < 61){
             if(frameCount%10 == 0){
@@ -375,7 +431,7 @@
           }
         }
         else{
-          if(downPressed && player.attacking == false){
+          if(downPressed && player.attacking == false && player.fishing == false){
             player.yspeed=player.maxSpeed;
             if(runDownFrame.x < 61){
               if(frameCount%10 == 0){
@@ -407,73 +463,61 @@
     playerYPos+=player.yspeed;
 
     //scrolling
-    if(playerXPos>(leftScroll+550) && port.scrollLeft < canvas.width){
-      port.scrollLeft+=3;
-      leftScroll+=3;
-    }
-    else{
-      if(playerXPos<(leftScroll+500) && port.scrollLeft > 0){
-        port.scrollLeft-=3;
-        leftScroll-=3;
-      }
-    }
-
-    if(playerYPos>port.scrollTop+250){
-      port.scrollTop+=3;
-    }
-    else{
-      if(playerYPos<port.scrollTop+200){
-        port.scrollTop-=3;
-      }
-    }
+    port.scrollTop = playerYPos-250
+    port.scrollLeft = playerXPos-450
 
     //enemy pacing
-    // horizontal pace
-    
     for(enemy in thisLevel.enemies){
+      var speed = thisLevel.enemies[enemy].maxSpeed;
       var random = randomNumBetween(4)
-      if(pace == 1){
+      var thisEnemy = thisLevel.enemies[enemy];
+      if(pace >= 100 && pace < 110){
+        thisEnemy.xspeed = 0;
+        thisEnemy.yspeed = 0;
+      }
+     if(pace == 220){
+        thisEnemy.xspeed = 0;
+        thisEnemy.yspeed = 0;
+        pace = 0;
+      }
+      if(pace == 10){
+        thisEnemy.xspeed = 0;
+        thisEnemy.yspeed = 0;
         switch(random){
           case 1:
-            thisLevel.enemies[enemy].xspeed = -1;
+            thisEnemy.xspeed = -(speed);
             break;
           case 2:
-            thisLevel.enemies[enemy].xspeed = 1;
+            thisEnemy.xspeed = speed;
             break;
           case 3:
-            thisLevel.enemies[enemy].yspeed = -1;
+            thisEnemy.yspeed = -(speed);
             break;
           case 4:
-            thisLevel.enemies[enemy].xspeed = 1;
+            thisEnemy.yspeed = speed;
             break;      
         }
-      }
-      else if(pace >= 100 && pace < 110){
-        thisLevel.enemies[enemy].xspeed = 0;
-        thisLevel.enemies[enemy].yspeed = 0;
       }
       else if(pace == 110){
+        thisEnemy.xspeed = 0;
+        thisEnemy.yspeed = 0;
         switch(random){
           case 1:
-            thisLevel.enemies[enemy].xspeed = -1;
+            thisEnemy.xspeed = -(speed);
             break;
           case 2:
-            thisLevel.enemies[enemy].xspeed = 1;
+            thisEnemy.xspeed = speed;
             break;
           case 3:
-            thisLevel.enemies[enemy].yspeed = -1;
+            thisEnemy.yspeed = -(speed);
             break;
           case 4:
-            thisLevel.enemies[enemy].xspeed = 1;
+            thisEnemy.yspeed = speed;
             break;      
         }
       }
-      else if(pace == 220){
-        pace = 0;
-        thisLevel.enemies[enemy].xspeed = 0;
-        thisLevel.enemies[enemy].yspeed = 0;
-      }
     } 
+
     pace++
 
     for(enemy in thisLevel.enemies){
@@ -535,6 +579,25 @@
         }
       }    
     }
+
+    for(npc in thisLevel.npcs){
+      var thisnpc = thisLevel.npcs[npc];
+      if(playerCollided(thisnpc,playerXPos,playerYPos)){
+        console.log("hit npc");
+        if(player.yspeed<0){
+          playerYPos=thisnpc.YPos+tileSize;
+        }
+        if(player.yspeed>0){
+          playerYPos=thisnpc.YPos-tileSize;
+        }
+        if(player.xspeed>0){
+          playerXPos=thisnpc.XPos-tileSize;
+        }
+        if(player.xspeed<0){
+          playerXPos=thisnpc.XPos+tileSize;
+        }
+      }    
+    }
     
     //enemy collision
     //Horzontal collision
@@ -582,7 +645,18 @@
         switch(thisLevel.collectables[item].type){
           case "heart":
             addLife(player,thisLevel.collectables[item].qty);
-            break; 
+            break;
+          case "heartContainer":
+            addLife(player,thisLevel.collectables[item].qty);
+            player.maxLives += 1;
+            player.lives = player.maxLives;
+            textBox('"I feel stronger somehow..."')            
+            break;   
+          case "weapon" :
+            player = equip(player,thisLevel.collectables[item]);
+            updateInventory(player.inventory);
+            console.log(player)
+            break;  
           case "key":
             player.keys.push(thisLevel.collectables[item]);
             updateKeys(player);
@@ -591,6 +665,9 @@
           case "money":
             bank = updateBank(bank, thisLevel.collectables[item].qty);
             break;
+          case "fish" :
+            player.inventory.push(thisLevel.collectables[item]);
+            updateInventory(player.inventory);  
         }
         if(thisLevel.collectables[item].name == 'end'){
           thisLevel = loadLevel(levels.level2);
@@ -708,6 +785,14 @@
       for(secret in thisLevel.secrets){
         var thisSecret = thisLevel.secrets[secret];
         action(thisSecret,player,playerXPos,playerYPos);
+      }
+      for(npc in thisLevel.npcs){
+        var thisnpc = thisLevel.npcs[npc];
+        action(thisnpc,player,playerXPos,playerYPos);
+      }
+      for(pond in thisLevel.ponds){
+        var thisPond = thisLevel.ponds[pond];
+        action(thisPond,player,playerXPos,playerYPos);
       }
       actionPressed = false;
     }

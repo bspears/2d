@@ -29,7 +29,8 @@ body {
   margin: 0 auto;
   height: 540px;
   width: 960px;
-  overflow: scroll; }
+  overflow: auto;
+  clear: both; }
 
 .canvas {
   position: absolute;
@@ -65,8 +66,13 @@ body {
   list-style-type: none; }
 
 .inventory {
+  border: 2px solid white;
+  border-radius: 3px;
   display: inline-block;
-  width: 400px;
+  width: 360px;
+  height: 50px;
+  margin-bottom: 50px;
+  padding: 5px;
   float: right; }
   .inventory li {
     display: inline-block; }

@@ -1,12 +1,15 @@
-extends layout
+
 
 block content
+  link(href='https://fonts.googleapis.com/css?family=VT323|Press+Start+2P' rel='stylesheet' type='text/css')
+  link(rel='stylesheet', href='/css/main.css')
   div.title
     h1 2D Game
   section.menu
     a(href="/game") New Game  
 
-  script(src="javascripts/assets.js") 
+  script(src="javascripts/scripts.js")
+  script(src="javascripts/assets.js")
   script(src="javascripts/game-api.js")
-  script(src="javascripts/levels.js") 
+  script(src="javascripts/levels.js")
   script(src="javascripts/keymap.js")

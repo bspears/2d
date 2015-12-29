@@ -3,22 +3,27 @@ var inventory = document.getElementById('inventory');
 var bank = document.getElementById('bank');
 var tileSize = 30;
 var textDisplay = {
-    "value": false
+  "value": false
 };
 var runAnimation = {
-    "value": true
-  };
-
+  "value": true
+};
 
 function randomNumBetween(highestNumber){
 	return Math.ceil(Math.random() * highestNumber);
 }
 
+function runScript(script){
+  textBox(script[0])
+}
+
+function changeState(gameState,value){
+  gameState.value = value;
+}
+
 function removeFromArray(array,obj){
 	var index = array.indexOf(obj);
-
 	array.splice(index,1);
-
 	return array;
 }
 
@@ -35,6 +40,7 @@ function addLife(character,qty){
 
 function loadLevel(level){
   var currentLevel = {
+    "background"   : level.background,
     "map"          : level.map,
     "cols"         : level.cols,
     "rows"         : level.rows,
@@ -46,7 +52,8 @@ function loadLevel(level){
     "chests"       : level.chests,
     "areas"        : level.areas,
     "doors"        : level.doors,
-    "secrets"      : level.secrets, 
+    "secrets"      : level.secrets,
+    "ponds"        : level.ponds
   }
   return currentLevel
 }
@@ -63,9 +70,10 @@ function updatePlayerInfo(player){
 }
 
 function updateInventory(array){
+  var inventory = document.getElementById('inventory');
+  inventory.innerHTML = '';
 	for(i=0; i<array.length;i++){
 		inventory.innerHTML += '<li><img src="'+ array[i].img.src +'"></li>';
-		return array;
 	}
 } 
 
@@ -78,7 +86,6 @@ function updateBank(target,value){
 	bank.innerHTML = '<span><img src="images/jewel.png"> x ' + target + '</span>';
 	return target;
 }
-
 
 function frameCounter(frames){
 	if(frames < 60){
@@ -155,22 +162,45 @@ function dropItem(obj){
 			return new Collectable('heart',2, heartImg,true,obj.XPos/30,obj.YPos/30); 
 			break
 		case 2:
-			return new Collectable('money',1,jewelImg,true,obj.XPos/30,obj.YPos/30);	
+			return new Collectable('money',1,jewelImg,true,obj.XPos/30,obj.YPos/30);
+      break;
 	}
 }
 
+function equip(player,item){
+  player.equiped = item.name;
+  player.attack  = item.attack;
+  playerAttack.src = item.imgSrc;
+  player.inventory.push(item); 
+  console.log(player.inventory)
+  return player;
+}
 
 // constructors
 
-var Enemy = function Enemy(enemyType,col,row,hp,maxSpeed,attack,specialItem){
+var Enemy = function Enemy(enemyType,col,row,specialItem){
   this.enemyType   = enemyType;
   this.col         = col;
   this.row         = row;
-  this.hp          = hp;
+  this.hp          = 3;
   this.xspeed      = 0;
   this.yspeed      = 0;
-  this.maxSpeed    = maxSpeed;
-  this.attack      = attack;
+  this.maxSpeed    = 1;
+  this.attack      = 1;
+  this.YPos        = row*tileSize;
+  this.XPos        = col*=tileSize;
+  this.specialItem = specialItem;
+}
+
+var Enemy2 = function Enemy(enemyType,col,row,specialItem){
+  this.enemyType   = enemyType;
+  this.col         = col;
+  this.row         = row;
+  this.hp          = 5;
+  this.xspeed      = 0;
+  this.yspeed      = 0;
+  this.maxSpeed    = 1.5;
+  this.attack      = 2;
   this.YPos        = row*tileSize;
   this.XPos        = col*=tileSize;
   this.specialItem = specialItem;
@@ -186,7 +216,14 @@ var Npc = function Npc(img,col,row,available,text,item){
   this.text      = text;
   this.item      = item;
   this.action    = function(){
-    textBox(this.text);
+    textBox(this.text[0]);
+    if(this.item){
+      item();
+      this.item = false;
+    }
+    else{
+      textBox(this.text[1]);
+    }
   }
 }
 
@@ -200,6 +237,20 @@ var Collectable = function Item(type,qty,img,available,col,row,name){
   this.XPos      = col*=tileSize;
   this.available = available;
   this.name      = name;
+}
+
+var Weapon = function Item(type,name,imgSrc,qty,img,available,col,row,attack){
+  this.type      = type;
+  this.name      = name;
+  this.imgSrc    = imgSrc;
+  this.qty       = qty;
+  this.img       = img;
+  this.col       = col;
+  this.row       = row;
+  this.YPos      = row*tileSize;
+  this.XPos      = col*=tileSize;
+  this.available = available;
+  this.attack    = attack;
 }
 
 var Chest = function Chest(img,col,row,locked,contents){
@@ -219,30 +270,48 @@ var Chest = function Chest(img,col,row,locked,contents){
 };
 
 var SecretDoor = function SecretDoor(img,col,row,available,name){
-  this.img = img;
-  this.col = col;
-  this.row = row;
-  this.name = name;
-  this.YPos = row*tileSize;
-  this.XPos = col*=tileSize;
+  this.img       = img;
+  this.col       = col;
+  this.row       = row;
+  this.name      = name;
+  this.YPos      = row*tileSize;
+  this.XPos      = col*=tileSize;
   this.available = available;
-  this.action = function(){
+  this.action    = function(){
     this.available = false;
-  }
+  };
   console.log(this);
 }
 
 var Door = function Door(area,col,row,returnX,returnY){
-  this.col = col;
-  this.row = row;
-  this.area = area;
-  this.YPos = row*tileSize;
-  this.XPos = col*=tileSize;
+  this.col     = col;
+  this.row     = row;
+  this.area    = area;
+  this.YPos    = row*tileSize;
+  this.XPos    = col*=tileSize;
   this.returnX = returnX;
   this.returnY = returnY;
-  console.log(this);
 }
 
+var FishingPond = function Pond(col,row){
+  this.col = col;
+  this.row = row;
+  this.YPos = row*tileSize;
+  this.XPos = col*=tileSize;
+  this.available = true;
+  this.action = function(){
+    dropX = this.col;
+    dropY = this.row + 2;
+    
+    if(randomNumBetween(4) == 4){
+      textBox('You caught a Mimi fish!');
+      levels.level1.collectables.push(new Collectable('fish',1,fishImg,true,dropX,dropY,'Fish'))
+    }
+    else{
+      textBox('Better luck next time.');
+    }
+  };
+}
 
 function pause(){
   runAnimation.value = false;
