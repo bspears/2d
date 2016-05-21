@@ -33,16 +33,16 @@ function keyMap(){
     switch(e.keyCode){
       case 65:
         leftPressed = false;
-        break
+        break;
       case 87:
         upPressed = false;
         break;
       case 68:
         rightPressed = false;
-        break
+        break;
       case 83:
         downPressed = false;
-        break
+        break;
       case 32:
         player.jumping = false;
         break;
@@ -52,3 +52,4 @@ function keyMap(){
     }
   }, false);
 }
+

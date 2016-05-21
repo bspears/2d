@@ -1,0 +1,85 @@
+body, p, span, div, img, ul, li, text {
+  margin: 0;
+  padding: 0; }
+
+a {
+  text-decoration: none;
+  color: white; }
+
+body {
+  font-family: 'VT323';
+  font-size: 30px;
+  background: black;
+  color: white; }
+
+.title {
+  text-align: center;
+  font-size: 3em; }
+
+.menu {
+  text-align: center; }
+
+.header {
+  margin: 0 auto;
+  width: 950px;
+  padding: 50px 0; }
+
+.viewport {
+  position: relative;
+  margin: 0 auto;
+  height: 540px;
+  width: 960px;
+  overflow: auto;
+  clear: both; }
+
+.canvas {
+  position: absolute;
+  top: 0;
+  left: 0; }
+
+.textBox {
+  width: 960px;
+  margin: 0 auto; }
+
+.name {
+  line-height: 30px;
+  vertical-align: top;
+  padding: 0;
+  margin: 0 1em; }
+
+.icon {
+  vertical-align: baseline; }
+
+#playerInfo {
+  text-align: left;
+  list-style-type: none;
+  display: block; }
+  #playerInfo li {
+    display: inline; }
+
+.info {
+  display: block;
+  width: 300px;
+  float: left; }
+
+#inventory {
+  list-style-type: none; }
+
+.inventory {
+  border: 2px solid white;
+  border-radius: 3px;
+  display: inline-block;
+  width: 360px;
+  height: 50px;
+  margin-bottom: 50px;
+  padding: 5px;
+  float: right; }
+  .inventory li {
+    display: inline-block; }
+
+.bank {
+  float: left;
+  margin-right: 50px; }
+
+.noShow {
+  display: none; }
