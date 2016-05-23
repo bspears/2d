@@ -183,7 +183,6 @@ Character.prototype = {
 }
 
 var Enemy = function(options){
-  Character.call(this);
   Object.assign(this, options);
   this.hp          = 3;
   this.maxSpeed    = 1;
@@ -196,7 +195,6 @@ Enemy.prototype = Object.create(Character.prototype);
 Enemy.prototype.constructor = Enemy;
 
 var SkullMan = function(options){
-  Enemy.call(this);
   Object.assign(this,options);
   this.img = monsterImg;
 };
@@ -205,7 +203,6 @@ SkullMan.prototype = Object.create(Character.prototype);
 SkullMan.prototype.constructor = SkullMan;
 
 var Squidy = function(options){
-  Enemy.call(this);
   Object.assign(this,options);
   this.img = squidImg;
 };
@@ -214,7 +211,6 @@ Squidy.prototype = Object.create(Character.prototype);
 Squidy.prototype.constructor = Squidy;
 
 var Npc = function(options){
-  Character.call(this);
   Object.assign(this, options);
   this.action    = function(){
     textBox(this.text[0]);
@@ -244,7 +240,6 @@ Collectable.prototype = {
 }
 
 var Key = function(options) {
-  Collectable.call(this);
   Object.assign(this,options);
   this.type      = "key";
   this.available = true;
@@ -257,7 +252,6 @@ Key.prototype.constructor = Key;
 var Weapon = function(options) {
   this.type = "weapon",
   this.attack = 1,
-  Collectable.call(this);
   Object.assign(this,options)
 };
 
@@ -265,7 +259,6 @@ Weapon.prototype = Object.create(Collectable.prototype);
 Weapon.prototype.constructor = Weapon;
 
 var Heart = function(options) {
-  Collectable.call(this);
   Object.assign(this,options);
   this.type = 'heart';
   this.img  = heartImg;
@@ -275,7 +268,6 @@ Heart.prototype = Object.create(Collectable.prototype);
 Heart.prototype.constructor = Heart;
 
 var HeartContainer = function(options) {
-  Collectable.call(this);
   Object.assign(this,options);
   this.type = 'heartContainer';
   this.img  = heartContainerImg;
@@ -285,7 +277,6 @@ HeartContainer.prototype = Object.create(Collectable.prototype);
 HeartContainer.prototype.constructor = HeartContainer;
 
 var Money = function(options) {
-  Collectable.call(this);
   Object.assign(this,options);
   this.type = 'money';
   this.img  = jewelImg;
@@ -342,7 +333,6 @@ var FishingPond = function Pond(col,row){
     }
   };
 };
-
 
 // text box
 function textBox(text){

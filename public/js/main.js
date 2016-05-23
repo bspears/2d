@@ -321,7 +321,6 @@ Character.prototype = {
 }
 
 var Enemy = function(options){
-  Character.call(this);
   Object.assign(this, options);
   this.hp          = 3;
   this.maxSpeed    = 1;
