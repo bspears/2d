@@ -1,12 +1,13 @@
 extends layout
 
 block content
-  
+  audio(src="audio/level1-1.mp3" autoplay loop)
   div#viewport.viewport
     div#background
     canvas#animation(class="canvas")
     canvas#canvas(class="canvas")
-  div#textBox(class="textBox")  	
+  div#textBox(class="textBox")
+
   script(src="javascripts/components/assets.js") 
   script(src="javascripts/components/gameApi.js")
   script(src="js/main.js")

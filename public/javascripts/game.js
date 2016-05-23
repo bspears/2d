@@ -1,13 +1,9 @@
-
-
-
-
 (function() {
   
   var gameApi = require('./components/gameApi');
   var assets = require('./components/assets');
   var levels = require('./components/levels');
-  var keymap = require('./components/keymap');
+  var player = require('./components/player.js');
   var thisLevel = levels.level1;
   var thisBackground = document.getElementById('background');
   var port = document.getElementById('viewport');
@@ -15,7 +11,7 @@
   var scrollTop = document.getElementById('viewport').scrollTop;
   var canvas = document.getElementById('canvas');
   var canvas2 = document.getElementById('animation');
-  var gameState = {'value':'play'};
+  var gameState = { 'value':'play' };
   var lives = document.getElementById('lives');
   var playerInfo = document.getElementById('playerInfo');
   var context = canvas.getContext('2d');
@@ -28,36 +24,19 @@
   var upPressed = false;
   var downPressed = false;
   var actionPressed = false;
-  var movementSpeed = 5;
   var frameCount = 0;
   var pace = 0;
   var inventory = [];
   var bank = 0;
   var tick = 0;
-  var player = {
-    "name"       : "Player",
-    "lives"      : 3,
-    "maxLives"   : 3,
-    "maxSpeed"   : 3,
-    "canMove"    : true,
-    "row"        : thisLevel.playerRow,
-    "col"        : thisLevel.playerCol,
-    "xspeed"     : 0,
-    "yspeed"     : 0,
-    "attack"     : 1,
-    "direction"  : "up",
-    "recovering" : false,
-    "attacking"  : false,
-    "fishing"    : false,
-    "equiped"    : "stick",
-    "keys"       : [],
-    "inventory"  : [{"name" : "stick", "img" : stickThumbImg}],
-    "animate"    : true
-  };
+  var playerYPos;
+  var playerXPos
 
   //positioning and sizing
-  var playerYPos = player.row*tileSize;
-  var playerXPos = player.col*tileSize;
+  player.row = thisLevel.playerRow;
+  player.col = thisLevel.playerCol;
+  playerYPos = player.row*tileSize;
+  playerXPos = player.col*tileSize;
 
 
   for(var enemy in thisLevel.enemies){
@@ -98,10 +77,7 @@
         if(tick < 10){
           player.attacking = true;
         }
-        break;
-      case 13:
-        
-        break;        
+        break;      
       case 191:
         if(textDisplay.value){
           actionPressed = false;
@@ -210,8 +186,6 @@
 
   function reRender(){
     background.innerHTML = '<img src="images/'+ thisLevel.background +'">';
-    port.scrollTop = playerYPos;
-    port.scrollLeft = playerXPos-500;
     canvas.width   = tileSize*thisLevel.cols;
     canvas.height  = tileSize*thisLevel.rows;
     canvas2.width  = tileSize*thisLevel.cols;
@@ -219,6 +193,8 @@
     context2.clearRect(0,0, canvas2.width, canvas2.height);
     playerYPos = player.row*tileSize;
     playerXPos = player.col*tileSize;
+    port.scrollTop = playerYPos;
+    port.scrollLeft = playerXPos-500;
 
     
 
@@ -295,8 +271,9 @@
 
     //npc
     for(var person in thisLevel.npcs){
+      var thisNpc = thisLevel.npcs[person];
       if(thisLevel.npcs[person].available){
-        context.drawImage(thisLevel.npcs[person].img,0,0,30,30,thisLevel.npcs[person].XPos,thisLevel.npcs[person].YPos,30,30);
+        context.drawImage(thisNpc.img,0,0,thisNpc.width,thisNpc.height,thisNpc.XPos,thisNpc.YPos,thisNpc.width,thisNpc.height);
       }
     } 
 
@@ -349,13 +326,6 @@
         context.drawImage(thisLevel.chests[chest].img,0,0,30,30,thisLevel.chests[chest].XPos,thisLevel.chests[chest].YPos,30,30);
       }
     }
-
-    //thisLevel.secrets
-    // for(var door in thisLevel.secrets){
-    //   if(thisLevel.secrets[door].available){
-    //     context.drawImage(thisLevel.secrets[door].img,0,0,30,30,thisLevel.secrets[door].XPos,thisLevel.secrets[door].YPos,30,30);
-    //   }
-    // }
 
     if(player.attacking){
       if(tick < 10){
@@ -552,40 +522,42 @@
       thisEnemy.YPos+=thisEnemy.yspeed;
     }
 
-    var baseCol = Math.floor(playerXPos/tileSize);
-    var baseRow = Math.floor(playerYPos/tileSize);
-    var colOverlap = playerXPos%tileSize;
-    var rowOverlap = playerYPos%tileSize;
+    (function playerCollision() {
+      var baseCol = Math.floor(playerXPos/tileSize);
+      var baseRow = Math.floor(playerYPos/tileSize);
+      var colOverlap = playerXPos%tileSize;
+      var rowOverlap = playerYPos%tileSize;
 
-    //Horzontal collision
-    if(player.xspeed>0){
-      if((thisLevel.map[baseRow][baseCol+1]>0 && !thisLevel.map[baseRow][baseCol]) ||
-         (thisLevel.map[baseRow+1][baseCol+1]>0 && !thisLevel.map[baseRow+1][baseCol] && rowOverlap)){
-        playerXPos=baseCol*tileSize;
+      //Horzontal collision
+      if(player.xspeed>0){
+        if((thisLevel.map[baseRow][baseCol+1]>0 && !thisLevel.map[baseRow][baseCol]) ||
+           (thisLevel.map[baseRow+1][baseCol+1]>0 && !thisLevel.map[baseRow+1][baseCol] && rowOverlap)){
+          playerXPos=baseCol*tileSize;
+        }
       }
-    }
 
-    if(player.xspeed<0){
-      if((!thisLevel.map[baseRow][baseCol+1]>0 && thisLevel.map[baseRow][baseCol]) ||
-         (!thisLevel.map[baseRow+1][baseCol+1]>0 && thisLevel.map[baseRow+1][baseCol] && rowOverlap)){
-        playerXPos=(baseCol+1)*tileSize;
+      if(player.xspeed<0){
+        if((!thisLevel.map[baseRow][baseCol+1]>0 && thisLevel.map[baseRow][baseCol]) ||
+           (!thisLevel.map[baseRow+1][baseCol+1]>0 && thisLevel.map[baseRow+1][baseCol] && rowOverlap)){
+          playerXPos=(baseCol+1)*tileSize;
+        }
       }
-    }
 
-    //Vertical collision
-    if(player.yspeed>0){
-      if((thisLevel.map[baseRow+1][baseCol]>0 && !thisLevel.map[baseRow][baseCol]) ||
-         (thisLevel.map[baseRow+1][baseCol+1]>0 && !thisLevel.map[baseRow][baseCol+1] && colOverlap)){
-        playerYPos = baseRow*tileSize;
+      //Vertical collision
+      if(player.yspeed>0){
+        if((thisLevel.map[baseRow+1][baseCol]>0 && !thisLevel.map[baseRow][baseCol]) ||
+           (thisLevel.map[baseRow+1][baseCol+1]>0 && !thisLevel.map[baseRow][baseCol+1] && colOverlap)){
+          playerYPos = baseRow*tileSize;
+        }
       }
-    }
 
-    if(player.yspeed<0){
-      if((!thisLevel.map[baseRow+1][baseCol]>0 && thisLevel.map[baseRow][baseCol]) ||
-         (!thisLevel.map[baseRow+1][baseCol+1]>0 && thisLevel.map[baseRow][baseCol+1] && rowOverlap)){
-        playerYPos=(baseRow+1)*tileSize;
+      if(player.yspeed<0){
+        if((!thisLevel.map[baseRow+1][baseCol]>0 && thisLevel.map[baseRow][baseCol]) ||
+           (!thisLevel.map[baseRow+1][baseCol+1]>0 && thisLevel.map[baseRow][baseCol+1] && rowOverlap)){
+          playerYPos=(baseRow+1)*tileSize;
+        }
       }
-    }
+    }) ();  
 
     //object collision
     for(var chest in thisLevel.chests){
@@ -626,42 +598,45 @@
     
     //enemy collision
     //Horzontal collision
-    for(enemy in thisLevel.enemies){
-      var thisEnemy  = thisLevel.enemies[enemy];
-      var baseCol    = Math.floor(thisEnemy.XPos/tileSize);
-      var baseRow    = Math.floor(thisEnemy.YPos/tileSize);
-      var colOverlap = thisEnemy.XPos%tileSize;
-      var rowOverlap = thisEnemy.YPos%tileSize;
-  
-      if(thisEnemy.xspeed>0){
-        if((thisLevel.map[baseRow][baseCol+1] && !thisLevel.map[baseRow][baseCol]) ||
-           (thisLevel.map[baseRow+1][baseCol+1] && !thisLevel.map[baseRow+1][baseCol] && rowOverlap)){
-          thisEnemy.XPos=baseCol*tileSize;
+
+    (function enemyCollision() {
+      for(enemy in thisLevel.enemies){
+        var thisEnemy  = thisLevel.enemies[enemy];
+        var baseCol    = Math.floor(thisEnemy.XPos/tileSize);
+        var baseRow    = Math.floor(thisEnemy.YPos/tileSize);
+        var colOverlap = thisEnemy.XPos%tileSize;
+        var rowOverlap = thisEnemy.YPos%tileSize;
+    
+        if(thisEnemy.xspeed>0){
+          if((thisLevel.map[baseRow][baseCol+1] && !thisLevel.map[baseRow][baseCol]) ||
+             (thisLevel.map[baseRow+1][baseCol+1] && !thisLevel.map[baseRow+1][baseCol] && rowOverlap)){
+            thisEnemy.XPos=baseCol*tileSize;
+          }
+        }
+    
+        if(thisEnemy.xspeed<0){
+          if((!thisLevel.map[baseRow][baseCol+1] && thisLevel.map[baseRow][baseCol]) ||
+             (!thisLevel.map[baseRow+1][baseCol+1] && thisLevel.map[baseRow+1][baseCol] && rowOverlap)){
+            thisEnemy.XPos=(baseCol+1)*tileSize;
+          }
+        }
+    
+        //Vertical collision
+        if(thisEnemy.yspeed>0){
+          if((thisLevel.map[baseRow+1][baseCol] && !thisLevel.map[baseRow][baseCol]) ||
+            (thisLevel.map[baseRow+1][baseCol+1] && !thisLevel.map[baseRow][baseCol+1] && colOverlap)){
+            thisEnemy.YPos = baseRow*tileSize;
+          }
+        }
+    
+        if(thisEnemy.yspeed<0){
+          if((!thisLevel.map[baseRow+1][baseCol] && thisLevel.map[baseRow][baseCol]) ||
+            (!thisLevel.map[baseRow+1][baseCol+1] && thisLevel.map[baseRow][baseCol+1] && rowOverlap)){
+            thisEnemy.YPos=(baseRow+1)*tileSize;
+          }
         }
       }
-  
-      if(thisEnemy.xspeed<0){
-        if((!thisLevel.map[baseRow][baseCol+1] && thisLevel.map[baseRow][baseCol]) ||
-           (!thisLevel.map[baseRow+1][baseCol+1] && thisLevel.map[baseRow+1][baseCol] && rowOverlap)){
-          thisEnemy.XPos=(baseCol+1)*tileSize;
-        }
-      }
-  
-      //Vertical collision
-      if(thisEnemy.yspeed>0){
-        if((thisLevel.map[baseRow+1][baseCol] && !thisLevel.map[baseRow][baseCol]) ||
-          (thisLevel.map[baseRow+1][baseCol+1] && !thisLevel.map[baseRow][baseCol+1] && colOverlap)){
-          thisEnemy.YPos = baseRow*tileSize;
-        }
-      }
-  
-      if(thisEnemy.yspeed<0){
-        if((!thisLevel.map[baseRow+1][baseCol] && thisLevel.map[baseRow][baseCol]) ||
-          (!thisLevel.map[baseRow+1][baseCol+1] && thisLevel.map[baseRow][baseCol+1] && rowOverlap)){
-          thisEnemy.YPos=(baseRow+1)*tileSize;
-        }
-      }
-    }
+    })  ();
 
     //item pick up
     for(var item in thisLevel.collectables){
@@ -857,27 +832,15 @@
       actionPressed = false;
     }
 
-    for(var secret in thisLevel.secrets){
-      var currentLevel = thisLevel;
-      var thisArea = thisLevel.secrets[secret].name;
-      if(playerYPos == thisLevel.secrets[secret].YPos && playerXPos == thisLevel.secrets[secret].XPos){
-        thisLevel = loadLevel(currentLevel.areas[thisArea]);
-        playerXPos = currentLevel.areas[thisArea].playerCol*tileSize;
-        playerYPos = currentLevel.areas[thisArea].playerRow*tileSize;
-        reRender();
-      }
-    }
-
     for(var door in thisLevel.doors){
-      var thisDoor = thisLevel.doors[door];
-      var thisArea = thisLevel.doors[door].dest;
+      var currentLevel = thisLevel;
+      var thisDoor = currentLevel.doors[door];
+      var thisArea = currentLevel.doors[door].dest;
       if(playerCollided(thisDoor,playerXPos,playerYPos, 4)){
         thisLevel  = levels[thisArea];
-        console.log(thisLevel.doors);
         player.col = thisDoor.destX;
         player.row = thisDoor.destY;
         reRender();
-        console.log(levels.level1.doors);
       }
     }
 

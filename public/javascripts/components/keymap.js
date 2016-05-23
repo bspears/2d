@@ -1,6 +1,6 @@
 //Key mapping
   
-function keyMap(){
+module.exports = function keyMap(player){
   document.addEventListener('keydown', function(e){
     console.log(e.keyCode);
     switch(e.keyCode){

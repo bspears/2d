@@ -9,8 +9,8 @@ a {
 body {
   font-family: 'VT323';
   font-size: 30px;
-  background: black;
-  color: white; }
+  background: #000;
+  color: #fff; }
 
 .title {
   text-align: center;
@@ -27,8 +27,8 @@ body {
 .viewport {
   position: relative;
   margin: 0 auto;
-  height: 540px;
-  width: 960px;
+  height: 35vw;
+  width: 70%;
   overflow: auto;
   clear: both; }
 
@@ -66,14 +66,14 @@ body {
   list-style-type: none; }
 
 .inventory {
-  border: 2px solid white;
+  border: 2px solid #fff;
   border-radius: 3px;
-  display: inline-block;
   width: 360px;
   height: 50px;
   margin-bottom: 50px;
   padding: 5px;
   float: right; }
+  .inventory,
   .inventory li {
     display: inline-block; }
 
@@ -84,4 +84,24 @@ body {
 .noShow {
   display: none; }
 
-/*# sourceMappingURL=main.css.map */
+.title {
+  transform: translateY(5%);
+  animation: drop-down 8s linear; }
+
+@keyframes drop-down {
+  0% {
+    transform: translateY(-99%); }
+  100% {
+    transform: translateY(5%); } }
+
+.menu {
+  visibility: hidden;
+  font-size: 2em;
+  animation: flicker infinite 900ms;
+  animation-delay: 8s; }
+
+@keyframes flicker {
+  45% {
+    visibility: hidden; }
+  100% {
+    visibility: visible; } }

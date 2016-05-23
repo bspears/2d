@@ -1,8 +1,8 @@
 body{
   font-family: 'VT323';
   font-size: 30px;
-  background: black;
-  color: white;
+  background: $color-black;
+  color: $color-white;
 }
 
 .title {
@@ -23,8 +23,8 @@ body{
 .viewport {
   position: relative;
   margin: 0 auto;
-  height: 540px;
-  width: 960px;
+  height: 35vw;
+  width: 70%;
   overflow: auto;
   clear: both;
 }
@@ -71,14 +71,15 @@ body{
 }
 
 .inventory{
-  border: 2px solid white;
+  border: 2px solid $color-white;
   border-radius: 3px;
-  display: inline-block;
   width: 360px;
   height: 50px;
   margin-bottom: 50px;
   padding: 5px;
   float: right;
+
+  &,
   li {
     display: inline-block;
   }

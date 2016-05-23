@@ -10,8 +10,4 @@ router.get('/game', function(req, res, next) {
   res.render('game', { title: '2D Game' });
 });
 
-router.get('/secret1', function(req, res, next) {
-  res.render('secret1', { title: '2D Game' });
-});
-
 module.exports = router;

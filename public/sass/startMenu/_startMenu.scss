@@ -1,0 +1,31 @@
+.title {
+    transform: translateY(5%);
+    animation: drop-down 8s linear;
+}
+
+@keyframes drop-down {
+    0% {
+        transform: translateY(-99%);
+    }
+
+    100% {
+        transform: translateY(5%);
+    }
+}
+
+.menu {
+    visibility: hidden;
+    font-size: 2em;
+    animation: flicker infinite 900ms;
+    animation-delay: 8s;
+}
+
+@keyframes flicker {
+    45% {
+        visibility: hidden;
+    }
+
+    100% {
+        visibility: visible;
+    }
+}

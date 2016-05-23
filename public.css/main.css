@@ -83,3 +83,7 @@ body {
 
 .noShow {
   display: none; }
+
+.menu input {
+  color: inherit;
+  background: #000; }

@@ -17,6 +17,14 @@ function runScript(script){
   textBox(script[0]);
 }
 
+function pause(){
+  runAnimation.value = false;
+}
+
+function unPause(){
+  runAnimation.value = true;
+}
+
 function changeState(gameState,value){
   gameState.value = value;
 }
@@ -38,31 +46,12 @@ function addLife(character,qty){
   }
 }
 
-function loadLevel(level){
-  return {
-    "background"   : level.background,
-    "map"          : level.map,
-    "cols"         : level.cols,
-    "rows"         : level.rows,
-    "playerCol"    : level.playerCol,
-    "playerRow"    : level.playerRow,
-    "enemies"      : level.enemies,
-    "npcs"         : level.npcs,
-    "collectables" : level.collectables,
-    "chests"       : level.chests,
-    "areas"        : level.areas,
-    "doors"        : level.doors,
-    "secrets"      : level.secrets,
-    "ponds"        : level.ponds
-  };
-}
-
 function gameOver(){
   //show game over screen
 }
 
 function updatePlayerInfo(player){
-  playerInfo.innerHTML = '<li class="name">'+player.name+'</li>';
+  playerInfo.innerHTML = '<li class="name">' + player.name + '</li>';
   for(i=0;i<player.lives;i++){
     playerInfo.innerHTML += '<li class="icon"><img src="images/playerLife.png"></li>';
   }
@@ -72,7 +61,7 @@ function updateInventory(array){
   var inventory = document.getElementById('inventory');
   inventory.innerHTML = '';
   for(i=0; i<array.length;i++){
-    inventory.innerHTML += '<li><img src="'+ array[i].img.src +'"></li>';
+    inventory.innerHTML += '<li><img src="' + array[i].img.src + '"></li>';
   }
 }
 
@@ -96,33 +85,26 @@ function frameCounter(frames){
   return frames;
 }
 
-function forFrames(numberOfFrames){
-  if(numberOfFrames === 0){
-    return false;
-  }else if(numberOfFrames >= 1){
-    numberOfFrames -= 1;
-    console.log(numberOfFrames);
-    return forFrames(numberOfFrames);
-  }
-}
-
 function playerCollided(object,xpos,ypos,range){
-  var distance = 27;
+  var distanceY = object.height ? object.height -3 : 27;
+  var distanceX = object.width ? object.width - 3 : 27;
+
   if(range){
-    distance += range;
+    distanceX += range;
+    distanceY += range;
   }
   //up and down
-  if(ypos - distance <= object.YPos && 
-    ypos + distance > object.YPos  && 
-    xpos + distance >= object.XPos && 
-    xpos - distance <= object.XPos){
+  if(ypos - distanceY <= object.YPos && 
+    ypos + distanceY > object.YPos  && 
+    xpos + distanceX >= object.XPos && 
+    xpos - distanceX <= object.XPos){
     return true;
   }
   //sides
-  if(xpos - distance <= object.XPos && 
-    xpos + distance > object.XPos  && 
-    ypos + distance >= object.YPos && 
-    ypos - distance <= object.YPos){
+  if(xpos - distanceX <= object.XPos && 
+    xpos + distanceX > object.XPos  && 
+    ypos + distanceY >= object.YPos && 
+    ypos - distanceY <= object.YPos){
     return true;
   }
   else{
@@ -131,7 +113,7 @@ function playerCollided(object,xpos,ypos,range){
 }
 
 function withinRange(obj1,obj2,range){
-  
+  //code to detect if one object is in a certain range of another.
 }
 
 function animationFlash(obj,frameCounter){
@@ -148,7 +130,6 @@ function drawItems(itemCollection) {
   for(var item in itemCollection){
     itemCollection[item].XPos = itemCollection[item].col*tileSize;
     itemCollection[item].YPos = itemCollection[item].row*tileSize;
-    console.log(itemCollection[item])
   }
 }
 
@@ -162,7 +143,6 @@ function chestOpen(chest,player){
     chest.empty = true;
     player.keys.pop();
     updateKeys(player);
-    console.log(player.keys.length);
   }
   else{
     textBox('It\'s locked. Maybe there is a key close by.');
@@ -173,9 +153,9 @@ function dropItem(obj){
   var dropChance = randomNumBetween(2);
   switch(dropChance){
     case 1:
-      return new Heart({col:obj.XPos/30,row:obj.YPos/30}); 
+      return new Heart({col:obj.XPos/30, row:obj.YPos/30}); 
     case 2:
-      return new Money({col:obj.XPos/30,row:obj.YPos/30});
+      return new Money({col:obj.XPos/30, row:obj.YPos/30});
   }
 }
 
@@ -184,17 +164,17 @@ function equip(player,item){
   player.attack  = item.attack;
   playerAttack.src = item.imgSrc;
   player.inventory.push(item); 
-  console.log(player.inventory);
   return player;
 }
 
 // constructors
-
 var Character = function() {
   this.category = "Character";
 };
 
 Character.prototype = {
+  height:   30,
+  width:    30,
   hp:       1,
   xspeed:   0,
   yspeed:   0,
@@ -275,10 +255,10 @@ Key.prototype = Object.create(Collectable.prototype);
 Key.prototype.constructor = Key;
 
 var Weapon = function(options) {
+  this.type = "weapon",
+  this.attack = 1,
   Collectable.call(this);
   Object.assign(this,options)
-  this.type      = 'weapon';
-  this.attack    = 1;
 };
 
 Weapon.prototype = Object.create(Collectable.prototype);
@@ -312,7 +292,7 @@ var Money = function(options) {
 }
 
 Money.prototype = Object.create(Collectable.prototype);
-// Money.prototype.constructor = Money;
+Money.prototype.constructor = Money;
 
 var Chest = function Chest(img,col,row,locked,contents){
   this.img       = img;
@@ -343,26 +323,6 @@ Door.prototype = {
   destY: 0
 }
 
-var SecretDoor = function SecretDoor(options){
-  Object.assign(this,options);
-  this.img       = img;
-  this.action    = function(){
-    this.available = false;
-  };
-};
-
-SecretDoor.prototype = Object.create(Door.prototype);
-
-// var Door = function Door(area,col,row,returnX,returnY){
-//   this.col     = col;
-//   this.row     = row;
-//   this.area    = area;
-//   this.YPos    = row*tileSize;
-//   this.XPos    = col*=tileSize;
-//   this.returnX = returnX;
-//   this.returnY = returnY;
-// };
-
 var FishingPond = function Pond(col,row){
   this.col = col;
   this.row = row;
@@ -383,13 +343,6 @@ var FishingPond = function Pond(col,row){
   };
 };
 
-function pause(){
-  runAnimation.value = false;
-}
-
-function unPause(){
-  runAnimation.value = true;
-}
 
 // text box
 function textBox(text){
@@ -440,5 +393,3 @@ function action(obj,player,playerXPos,playerYPos){
     obj.action(); 
   }
 }
-
-

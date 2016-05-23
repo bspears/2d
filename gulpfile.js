@@ -21,7 +21,7 @@ gulp.task('lint', function() {
 gulp.task('sass', function(){
   return gulp.src('public/sass/*.scss')
     .pipe(sass())
-    .pipe(gulp.dest('public.css'))
+    .pipe(gulp.dest('./public/css/'))
 });
 
 gulp.task('browserify', function() {
@@ -36,7 +36,7 @@ gulp.task('browserify', function() {
 //watch
 gulp.task('watch', function(){
   gulp.watch('public/javascripts/*.js', ['lint', 'browserify']);
-  gulp.watch('sass/*.scss', ['sass']);
+  gulp.watch('./public/sass/*.scss', ['sass']);
 })
 
 gulp.task('default', ['lint', 'sass', 'browserify', 'watch']);

@@ -114,6 +114,9 @@ chestImg.src = "images/chest.png";
 var bushImg = new Image();
 bushImg.src = "images/bush.png";
 
+var giraffeImg = new Image();
+giraffeImg.src = "images/giraffeImg.png";
+
 var forrestTree1Img = new Image();
 forrestTree1Img.src = "images/forrestTree1.png";
 

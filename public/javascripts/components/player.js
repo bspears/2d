@@ -1,0 +1,20 @@
+module.exports = {
+    "name"       : "Player",
+    "lives"      : 3,
+    "maxLives"   : 3,
+    "maxSpeed"   : 3,
+    "canMove"    : true,
+    "row"        : 0,
+    "col"        : 0,
+    "xspeed"     : 0,
+    "yspeed"     : 0,
+    "attack"     : 1,
+    "direction"  : "up",
+    "recovering" : false,
+    "attacking"  : false,
+    "fishing"    : false,
+    "equiped"    : "stick",
+    "keys"       : [],
+    "inventory"  : [{"name" : "stick", "img" : stickThumbImg}],
+    "animate"    : true
+  };
