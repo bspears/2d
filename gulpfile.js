@@ -3,13 +3,14 @@
 var gulp = require('gulp');
 
 //plug ins
-var jshint = require('gulp-jshint');
-var sass = require('gulp-sass');
-var concat = require('gulp-concat');
-var uglify = require('gulp-uglify');
-var rename = require('gulp-rename');
+var jshint     = require('gulp-jshint');
+var sass       = require('gulp-sass');
+var concat     = require('gulp-concat');
+var uglify     = require('gulp-uglify');
+var rename     = require('gulp-rename');
 var browserify = require('browserify');
-var source = require('vinyl-source-stream');
+var source     = require('vinyl-source-stream');
+var es         = require('event-stream');
 
 //lint task 
 gulp.task('lint', function() {

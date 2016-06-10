@@ -1,6 +1,5 @@
+// var pubsub = require('./pubsub');
 var playerInfo = document.getElementById('playerInfo');
-var inventory = document.getElementById('inventory');
-var bank = document.getElementById('bank');
 var tileSize = 30;
 var textDisplay = {
   "value": false
@@ -58,11 +57,12 @@ function updatePlayerInfo(player){
 }
 
 function updateInventory(array){
-  var inventory = document.getElementById('inventory');
-  inventory.innerHTML = '';
+  var items = " ";
+
   for(i=0; i<array.length;i++){
-    inventory.innerHTML += '<li><img src="' + array[i].img.src + '"></li>';
+    items += '<li><img src="' + array[i].img.src + '"></li>';
   }
+  return items;
 }
 
 function updateKeys(player){
@@ -114,6 +114,15 @@ function playerCollided(object,xpos,ypos,range){
 
 function withinRange(obj1,obj2,range){
   //code to detect if one object is in a certain range of another.
+  var xRange = obj1.XPos - obj2.XPos;
+  var yRange = obj1.YPos - obj2.YPos;
+
+  if(Math.abs(xRange) <= range &&
+     Math.abs(yRange) <= range){
+    return true;
+  } else {
+    return false;
+  }
 }
 
 function animationFlash(obj,frameCounter){
@@ -168,22 +177,42 @@ function equip(player,item){
 }
 
 // constructors
-var Character = function() {
-  this.category = "Character";
-};
 
-Character.prototype = {
-  height:   30,
-  width:    30,
-  hp:       1,
-  xspeed:   0,
-  yspeed:   0,
-  maxSpeed: 1,
-  attack:   1
+var GameObject = function(options) {
+  Object.assign(this, options);
 }
 
+GameObject.prototype = {
+  height:    30,
+  width:     30,
+  col:       0,
+  row:       0,
+  XPos:      0,
+  YPos:      0,
+  available: true,
+  updatePos: function() {
+    this.XPos = this.col * tileSize;
+    this.YPos = this.row * tileSize;
+  }
+}
+
+var Character = function(options) {
+  this.hp = 1;
+  this.xspeed = 0;
+  this.yspeed = 0;
+  this.maxSpeed = 0;
+  this.attack = 0;
+  GameObject.call(this, options);
+  this.takeDamage = function(value) {
+    this.hp -= value;
+  };
+};
+
+Character.prototype = Object.create(GameObject.prototype);
+Character.prototype.constructor = Character;
+
 var Enemy = function(options){
-  Object.assign(this, options);
+  Character.call(this, options);
   this.hp          = 3;
   this.maxSpeed    = 1;
   this.xspeed      = 0;
@@ -195,24 +224,31 @@ Enemy.prototype = Object.create(Character.prototype);
 Enemy.prototype.constructor = Enemy;
 
 var SkullMan = function(options){
-  Object.assign(this,options);
+  Enemy.call(this, options);
   this.img = monsterImg;
+  this.ai  = "walker";
 };
 
-SkullMan.prototype = Object.create(Character.prototype);
+SkullMan.prototype = Object.create(Enemy.prototype);
 SkullMan.prototype.constructor = SkullMan;
 
 var Squidy = function(options){
-  Object.assign(this,options);
-  this.img = squidImg;
+  Enemy.call(this, options);
+  this.img      = squidImg;
+  this.ai       = "seeker";
+  this.maxSpeed = 2;
 };
 
-Squidy.prototype = Object.create(Character.prototype);
+Squidy.prototype = Object.create(Enemy.prototype);
 Squidy.prototype.constructor = Squidy;
 
 var Npc = function(options){
-  Object.assign(this, options);
-  this.action    = function(){
+  Character.call(this, options);
+};
+
+Npc.prototype = Object.create(Character.prototype);
+Npc.prototype.constructor = Npc;
+Npc.prototype.action = function(){
     textBox(this.text[0]);
     if(this.item){
       this.item();
@@ -222,27 +258,20 @@ var Npc = function(options){
       textBox(this.text[1]);
     }
   };
+
+var Collectable = function(options){
+  this.type = "undefined";
+  this.qty = 1;
+  this.img = defaultImg;
+  GameObject.call(this,options);
 };
 
-Npc.prototype = Object.create(Character.prototype);
-Npc.prototype.constructor = Npc;
-
-var Collectable = function(){
-};
-
-Collectable.prototype = {
-  type:      "undefined",
-  qty:       1,
-  img:       defaultImg,
-  available: true,
-  col:       0,
-  row:       0
-}
+Collectable.prototype = Object.create(GameObject.prototype);
+Collectable.prototype.constructor = Collectable;
 
 var Key = function(options) {
-  Object.assign(this,options);
+  Collectable.call(this,options);
   this.type      = "key";
-  this.available = true;
   this.img       = keyImg;
 }
 
@@ -250,16 +279,15 @@ Key.prototype = Object.create(Collectable.prototype);
 Key.prototype.constructor = Key;
 
 var Weapon = function(options) {
-  this.type = "weapon",
-  this.attack = 1,
-  Object.assign(this,options)
+  Collectable.call(this,options),
+  this.type = "weapon"
 };
 
 Weapon.prototype = Object.create(Collectable.prototype);
 Weapon.prototype.constructor = Weapon;
 
 var Heart = function(options) {
-  Object.assign(this,options);
+  Collectable.call(this,options);
   this.type = 'heart';
   this.img  = heartImg;
 }
@@ -268,7 +296,7 @@ Heart.prototype = Object.create(Collectable.prototype);
 Heart.prototype.constructor = Heart;
 
 var HeartContainer = function(options) {
-  Object.assign(this,options);
+  Collectable.call(this,options);
   this.type = 'heartContainer';
   this.img  = heartContainerImg;
 }
@@ -277,7 +305,7 @@ HeartContainer.prototype = Object.create(Collectable.prototype);
 HeartContainer.prototype.constructor = HeartContainer;
 
 var Money = function(options) {
-  Object.assign(this,options);
+  Collectable.call(this,options);
   this.type = 'money';
   this.img  = jewelImg;
 }
@@ -285,54 +313,50 @@ var Money = function(options) {
 Money.prototype = Object.create(Collectable.prototype);
 Money.prototype.constructor = Money;
 
-var Chest = function Chest(img,col,row,locked,contents){
-  this.img       = img;
-  this.col       = col;
-  this.row       = row;
-  this.locked    = locked;
-  this.contents  = contents;
-  this.available = true;
-  this.YPos      = row*tileSize;
-  this.XPos      = col*=tileSize;
+var Chest = function Chest(options){
+  this.img       = chestImg;
+  this.locked    = false;
+  this.contents  = undefined;
   this.empty     = false;
-  this.open      = function(){
-    contents();
-    contents = null;
-  };
+  GameObject.call(this, options);
 };
+
+Chest.prototype = Object.create(GameObject.prototype);
+Chest.prototype.constructor = Chest;
+Chest.prototype.open = function(){
+    this.contents();
+    this.contents = null;
+  };
 
 var Door = function(options) {
-  Object.assign(this,options);
+  this.dest = "null";
+  this.destX = 0;
+  this.destY = 0;
+  GameObject.call(this,options);
 };
 
-Door.prototype = {
-  dest: "null",
-  col: 0,
-  row: 0,
-  available: true,
-  destX: 0,
-  destY: 0
-}
+Door.prototype = Object.create(GameObject.prototype);
+Door.prototype.constructor = Door;
 
-var FishingPond = function Pond(col,row){
-  this.col = col;
-  this.row = row;
-  this.YPos = row*tileSize;
-  this.XPos = col*=tileSize;
-  this.available = true;
-  this.action = function(){
-    dropX = this.col;
-    dropY = this.row + 2;
+// var FishingPond = function Pond(col,row){
+//   this.col = col;
+//   this.row = row;
+//   this.YPos = row*tileSize;
+//   this.XPos = col*=tileSize;
+//   this.available = true;
+//   this.action = function(){
+//     dropX = this.col;
+//     dropY = this.row + 2;
     
-    if(randomNumBetween(4) == 4){
-      textBox('You caught a Mimi fish!');
-      levels.level1.collectables.push(new Collectable('fish',1,fishImg,true,dropX,dropY,'Fish'));
-    }
-    else{
-      textBox('Better luck next time.');
-    }
-  };
-};
+//     if(randomNumBetween(4) == 4){
+//       textBox('You caught a Mimi fish!');
+//       levels.level1.collectables.push(new Collectable('fish',1,fishImg,true,dropX,dropY,'Fish'));
+//     }
+//     else{
+//       textBox('Better luck next time.');
+//     }
+//   };
+// };
 
 // text box
 function textBox(text){
@@ -366,7 +390,7 @@ function action(obj,player,playerXPos,playerYPos){
     playerXPos >= obj.XPos - 15 ){
     obj.action(); 
   }
-  // //right action
+  //right action
   if(player.direction == "right" && 
     playerXPos >= obj.XPos - 50 && 
     playerXPos < obj.XPos && 
@@ -374,7 +398,7 @@ function action(obj,player,playerXPos,playerYPos){
     playerYPos >= obj.YPos - 15 ){
     obj.action(); 
   }
-  // //left action
+  //left action
   if(player.direction == "left" && 
     playerXPos <= obj.XPos + 50 && 
     playerXPos > obj.XPos && 

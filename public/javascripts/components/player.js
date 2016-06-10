@@ -6,6 +6,8 @@ module.exports = {
     "canMove"    : true,
     "row"        : 0,
     "col"        : 0,
+    "XPos"       : 0,
+    "YPos"       : 0,
     "xspeed"     : 0,
     "yspeed"     : 0,
     "attack"     : 1,
@@ -15,6 +17,7 @@ module.exports = {
     "fishing"    : false,
     "equiped"    : "stick",
     "keys"       : [],
+    "bank"       : 0,
     "inventory"  : [{"name" : "stick", "img" : stickThumbImg}],
     "animate"    : true
   };

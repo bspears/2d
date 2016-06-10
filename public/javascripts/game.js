@@ -1,57 +1,60 @@
 (function() {
   
-  var gameApi = require('./components/gameApi');
-  var assets = require('./components/assets');
-  var levels = require('./components/levels');
-  var player = require('./components/player.js');
-  var thisLevel = levels.level1;
-  var thisBackground = document.getElementById('background');
-  var port = document.getElementById('viewport');
-  var leftScroll = document.getElementById('viewport').scrollLeft;
-  var scrollTop = document.getElementById('viewport').scrollTop;
-  var canvas = document.getElementById('canvas');
-  var canvas2 = document.getElementById('animation');
-  var gameState = { 'value':'play' };
-  var lives = document.getElementById('lives');
-  var playerInfo = document.getElementById('playerInfo');
-  var context = canvas.getContext('2d');
-  var context2 = canvas2.getContext('2d');
-  var backgroundRender = false;
-  var recoverCount = 0;
-  var tileSize = 30;
-  var leftPressed = false;
-  var rightPressed = false;
-  var upPressed = false;
-  var downPressed = false;
-  var actionPressed = false;
-  var frameCount = 0;
-  var pace = 0;
-  var inventory = [];
-  var bank = 0;
-  var tick = 0;
-  var playerYPos;
-  var playerXPos
+  //dependencies 
+  var gameApi    = require('./components/gameApi');
+  var assets     = require('./components/assets');
+  var levels     = require('./components/levels');
+  var playerData = require('./components/player.js');
+  var pubsubData = require('./components/pubsub');
+  var enemyAi    = require('./components/ai');
 
-  //positioning and sizing
+  //game elements
+  var thisLevel      = levels.level1;
+  var thisBackground = document.getElementById('background');
+  var port           = document.getElementById('viewport');
+  var canvas         = document.getElementById('canvas');
+  var canvas2        = document.getElementById('animation');
+  var context        = canvas.getContext('2d');
+  var context2       = canvas2.getContext('2d');
+  var player         = new Character(playerData);
+  var pubsub         = pubsubData();
+  var ai             = enemyAi();
+
+  //HUD elements
+  var lives      = document.getElementById('lives');
+  var playerInfo = document.getElementById('playerInfo');
+  var inventory  = document.getElementById('inventory');
+  var bank       = document.getElementById('bank');
+  
+  //states
+  var leftScroll       = port.scrollLeft;
+  var scrollTop        = port.scrollTop;
+  var gameState        = { 'value':'play' };
+  var backgroundRender = false;
+  var recoverCount     = 0;
+  var tileSize         = 30;
+  var leftPressed      = false;
+  var rightPressed     = false;
+  var upPressed        = false;
+  var downPressed      = false;
+  var actionPressed    = false;
+  var frameCount       = 0;
+  var pace             = 0;
+  var tick             = 0;
+
+
+  //player initial positioning
   player.row = thisLevel.playerRow;
   player.col = thisLevel.playerCol;
-  playerYPos = player.row*tileSize;
-  playerXPos = player.col*tileSize;
+  player.updatePos();
 
+  //give all objects initial position values
+  for(var object in thisLevel.GameObjects){
+    var objects = thisLevel.GameObjects[object];
 
-  for(var enemy in thisLevel.enemies){
-    thisLevel.enemies[enemy].XPos = thisLevel.enemies[enemy].col*tileSize;
-    thisLevel.enemies[enemy].YPos = thisLevel.enemies[enemy].row*tileSize;
-  }
-
-  for(var npc in thisLevel.npcs){
-    thisLevel.npcs[npc].XPos = thisLevel.npcs[npc].col*tileSize;
-    thisLevel.npcs[npc].YPos = thisLevel.npcs[npc].row*tileSize;
-  }
-
-  for(var door in thisLevel.doors){
-    thisLevel.doors[door].XPos = thisLevel.doors[door].col*tileSize;
-    thisLevel.doors[door].YPos = thisLevel.doors[door].row*tileSize;
+    for(item in objects) {
+      objects[item].updatePos();
+    }
   }
 
   //Key mapping
@@ -116,16 +119,15 @@
   }, false);
 
   //build level
-
   function renderBackground(){
     background.innerHTML = '<img src="images/'+ thisLevel.background +'">';
-    canvas.width   = tileSize*thisLevel.cols;
-    canvas.height  = tileSize*thisLevel.rows;
-    canvas2.width  = tileSize*thisLevel.cols;
-    canvas2.height = tileSize*thisLevel.rows;
-    port.scrollTop = playerYPos;
-    port.scrollLeft = playerXPos-500;
-    updateInventory(player.inventory);
+    canvas.width         = tileSize*thisLevel.cols;
+    canvas.height        = tileSize*thisLevel.rows;
+    canvas2.width        = tileSize*thisLevel.cols;
+    canvas2.height       = tileSize*thisLevel.rows;
+    port.scrollTop       = player.YPos;
+    port.scrollLeft      = player.XPos-500;
+    inventory.innerHTML  = updateInventory(player.inventory);
     context2.clearRect(0,0, canvas2.width, canvas2.height);
 
     //water
@@ -186,31 +188,23 @@
 
   function reRender(){
     background.innerHTML = '<img src="images/'+ thisLevel.background +'">';
-    canvas.width   = tileSize*thisLevel.cols;
-    canvas.height  = tileSize*thisLevel.rows;
-    canvas2.width  = tileSize*thisLevel.cols;
-    canvas2.height = tileSize*thisLevel.rows;
+    canvas.width         = tileSize*thisLevel.cols;
+    canvas.height        = tileSize*thisLevel.rows;
+    canvas2.width        = tileSize*thisLevel.cols;
+    canvas2.height       = tileSize*thisLevel.rows;
+    port.scrollTop       = player.YPos;
+    port.scrollLeft      = player.XPos-500;
     context2.clearRect(0,0, canvas2.width, canvas2.height);
-    playerYPos = player.row*tileSize;
-    playerXPos = player.col*tileSize;
-    port.scrollTop = playerYPos;
-    port.scrollLeft = playerXPos-500;
 
-    
+    player.updatePos();
 
-    for(var enemy in thisLevel.enemies){
-      thisLevel.enemies[enemy].XPos = thisLevel.enemies[enemy].col*tileSize;
-      thisLevel.enemies[enemy].YPos = thisLevel.enemies[enemy].row*tileSize;
-    }
+    //update game object locations
+    for(var object in thisLevel.GameObjects){
+      var objects = thisLevel.GameObjects[object];
 
-    for(var npc in thisLevel.npcs){
-      thisLevel.npcs[npc].XPos = thisLevel.npcs[npc].col*tileSize;
-      thisLevel.npcs[npc].YPos = thisLevel.npcs[npc].row*tileSize;
-    }
-
-    for(var door in thisLevel.doors){
-      thisLevel.doors[door].XPos = thisLevel.doors[door].col*tileSize;
-      thisLevel.doors[door].YPos = thisLevel.doors[door].row*tileSize;
+      for(item in objects) {
+        objects[item].updatePos();
+      }
     }
 
     //water
@@ -262,68 +256,48 @@
   function renderLevel(){
     context.clearRect(0,0, canvas.width, canvas.height);
 
-    //enemy1
-    for(var enemy in thisLevel.enemies){
-      if(thisLevel.enemies[enemy].hp>0){
-        context.drawImage(thisLevel.enemies[enemy].img,0,0,30,30,thisLevel.enemies[enemy].XPos,thisLevel.enemies[enemy].YPos,30,30);
+    //draw each game object
+    for(object in thisLevel.GameObjects){
+      var objects = thisLevel.GameObjects[object];
+
+      for(object in objects){
+        var item   = objects[object];
+        var width  = item.width ? item.width : 30;
+        var height = item.height ? item.height : 30;
+
+        if(item.img && item.available) {
+          context.drawImage(item.img,0,0,width,height,item.XPos,item.YPos,width,height);
+        }
       }
-    } 
-
-    //npc
-    for(var person in thisLevel.npcs){
-      var thisNpc = thisLevel.npcs[person];
-      if(thisLevel.npcs[person].available){
-        context.drawImage(thisNpc.img,0,0,thisNpc.width,thisNpc.height,thisNpc.XPos,thisNpc.YPos,thisNpc.width,thisNpc.height);
-      }
-    } 
-
-
-    for(var collectable in thisLevel.collectables){
-      thisLevel.collectables[collectable].XPos = thisLevel.collectables[collectable].col*tileSize;
-      thisLevel.collectables[collectable].YPos = thisLevel.collectables[collectable].row*tileSize;
     }
 
     //player
     if(player.animate && player.attacking === false){
       if(player.direction === "up"){
-        context.drawImage(playerRunUp,runUpFrame.x,runUpFrame.y,30,30,playerXPos,playerYPos,30,30); 
+        context.drawImage(playerRunUp,runUpFrame.x,runUpFrame.y,30,30,player.XPos,player.YPos,30,30); 
       }
       if(player.direction === "down"){
-        context.drawImage(playerRunDown,runDownFrame.x,runDownFrame.y,30,30,playerXPos,playerYPos,30,30); 
+        context.drawImage(playerRunDown,runDownFrame.x,runDownFrame.y,30,30,player.XPos,player.YPos,30,30); 
       }
       if(player.direction === "right"){
-        context.drawImage(playerRunRight,runRightFrame.x,runRightFrame.y,30,30,playerXPos,playerYPos,30,30); 
+        context.drawImage(playerRunRight,runRightFrame.x,runRightFrame.y,30,30,player.XPos,player.YPos,30,30); 
       }
       if(player.direction === "left"){
-        context.drawImage(playerRunLeft,runLeftFrame.x,runLeftFrame.y,30,30,playerXPos,playerYPos,30,30); 
+        context.drawImage(playerRunLeft,runLeftFrame.x,runLeftFrame.y,30,30,player.XPos,player.YPos,30,30); 
       }
     }
     else if(player.attacking || player.fishing){
       if(player.direction === "up"){
-        context.drawImage(attackMove,0,0,30,30,playerXPos,playerYPos,30,30); 
+        context.drawImage(attackMove,0,0,30,30,player.XPos,player.YPos,30,30); 
       }
       if(player.direction === "down"){
-        context.drawImage(attackMove,60,0,30,30,playerXPos,playerYPos,30,30); 
+        context.drawImage(attackMove,60,0,30,30,player.XPos,player.YPos,30,30); 
       }
       if(player.direction === "right"){
-        context.drawImage(attackMove,30,0,30,30,playerXPos,playerYPos,30,30); 
+        context.drawImage(attackMove,30,0,30,30,player.XPos,player.YPos,30,30); 
       }
       if(player.direction === "left"){
-        context.drawImage(attackMove,90,0,30,30,playerXPos,playerYPos,30,30); 
-      }
-    }
-
-    //items
-    for(var item in thisLevel.collectables){
-      if(thisLevel.collectables[item].available){
-        context.drawImage(thisLevel.collectables[item].img,0,0,30,30,thisLevel.collectables[item].XPos,thisLevel.collectables[item].YPos,30,30);
-      }
-    }
-
-    //thisLevel.chests
-    for(var chest in thisLevel.chests){
-      if(thisLevel.chests[chest].available){
-        context.drawImage(thisLevel.chests[chest].img,0,0,30,30,thisLevel.chests[chest].XPos,thisLevel.chests[chest].YPos,30,30);
+        context.drawImage(attackMove,90,0,30,30,player.XPos,player.YPos,30,30); 
       }
     }
 
@@ -331,19 +305,19 @@
       if(tick < 10){
         switch(player.direction){
           case "up":
-            context.drawImage(playerAttack,attackFrame.x,attackFrame.y,30,30,playerXPos,playerYPos-30,30,30);
+            context.drawImage(playerAttack,attackFrame.x,attackFrame.y,30,30,player.XPos,player.YPos-30,30,30);
             tick += 1;
             break;
           case "right":
-            context.drawImage(playerAttack,attackFrame.x+30,attackFrame.y,30,30,playerXPos+30,playerYPos,30,30);
+            context.drawImage(playerAttack,attackFrame.x+30,attackFrame.y,30,30,player.XPos+30,player.YPos,30,30);
             tick += 1;
             break;
           case "down":
-            context.drawImage(playerAttack,attackFrame.x+60,attackFrame.y,30,30,playerXPos,playerYPos+30,30,30);
+            context.drawImage(playerAttack,attackFrame.x+60,attackFrame.y,30,30,player.XPos,player.YPos+30,30,30);
             tick += 1; 
             break;
           case "left":
-            context.drawImage(playerAttack,attackFrame.x+90,attackFrame.y,30,30,playerXPos-30,playerYPos,30,30);
+            context.drawImage(playerAttack,attackFrame.x+90,attackFrame.y,30,30,player.XPos-30,player.YPos,30,30);
             tick += 1; 
             break;
         }
@@ -356,16 +330,16 @@
     if(player.fishing){
       switch(player.direction){
         case "up":
-          context.drawImage(playerAttack,attackFrame.x,attackFrame.y,30,30,playerXPos,playerYPos-30,30,30);
+          context.drawImage(playerAttack,attackFrame.x,attackFrame.y,30,30,player.XPos,player.YPos-30,30,30);
           break;
         case "right":
-          context.drawImage(playerAttack,attackFrame.x+30,attackFrame.y,30,30,playerXPos+30,playerYPos,30,30);
+          context.drawImage(playerAttack,attackFrame.x+30,attackFrame.y,30,30,player.XPos+30,player.YPos,30,30);
           break;
         case "down":
-          context.drawImage(playerAttack,attackFrame.x+60,attackFrame.y,30,30,playerXPos,playerYPos+30,30,30);
+          context.drawImage(playerAttack,attackFrame.x+60,attackFrame.y,30,30,player.XPos,player.YPos+30,30,30);
           break;
         case "left":
-          context.drawImage(playerAttack,attackFrame.x+90,attackFrame.y,30,30,playerXPos-30,playerYPos,30,30);
+          context.drawImage(playerAttack,attackFrame.x+90,attackFrame.y,30,30,player.XPos-30,player.YPos,30,30);
           break;
       }   
     }
@@ -455,91 +429,48 @@
       player.direction = "right";
     }
 
-    playerXPos+=player.xspeed;
-    playerYPos+=player.yspeed;
+    player.XPos+=player.xspeed;
+    player.YPos+=player.yspeed;
 
     //scrolling
-    port.scrollTop = playerYPos-250;
-    port.scrollLeft = playerXPos-450;
+    port.scrollTop = player.YPos-250;
+    port.scrollLeft = player.XPos-450;
 
-    //enemy pacing
-    for(var enemy in thisLevel.enemies){
-      var speed = thisLevel.enemies[enemy].maxSpeed;
-      var random = randomNumBetween(4);
-      var thisEnemy = thisLevel.enemies[enemy];
-      if(pace >= 100 && pace < 110){
-        thisEnemy.xspeed = 0;
-        thisEnemy.yspeed = 0;
-      }
-     if(pace === 220){
-        thisEnemy.xspeed = 0;
-        thisEnemy.yspeed = 0;
-        pace = 0;
-      }
-      if(pace === 10){
-        thisEnemy.xspeed = 0;
-        thisEnemy.yspeed = 0;
-        switch(random){
-          case 1:
-            thisEnemy.xspeed = -(speed);
-            break;
-          case 2:
-            thisEnemy.xspeed = speed;
-            break;
-          case 3:
-            thisEnemy.yspeed = -(speed);
-            break;
-          case 4:
-            thisEnemy.yspeed = speed;
-            break;      
-        }
-      }
-      else if(pace === 110){
-        thisEnemy.xspeed = 0;
-        thisEnemy.yspeed = 0;
-        switch(random){
-          case 1:
-            thisEnemy.xspeed = -(speed);
-            break;
-          case 2:
-            thisEnemy.xspeed = speed;
-            break;
-          case 3:
-            thisEnemy.yspeed = -(speed);
-            break;
-          case 4:
-            thisEnemy.yspeed = speed;
-            break;      
-        }
-      }
-    } 
+    //enemy intelligence
+    for(enemy in thisLevel.GameObjects.enemies){
+      var thisEnemy = thisLevel.GameObjects.enemies[enemy];
+      var thisAi    = thisEnemy.ai;
 
-    pace++;
-
-    for(enemy in thisLevel.enemies){
-      var thisEnemy = thisLevel.enemies[enemy];
+      ai[thisAi](thisEnemy, pace, player);
       thisEnemy.XPos+=thisEnemy.xspeed;
       thisEnemy.YPos+=thisEnemy.yspeed;
     }
+    
+    if(pace === 211) {
+      pace = 0;
+    }
 
+    pace++;
+
+    //collision
     (function playerCollision() {
-      var baseCol = Math.floor(playerXPos/tileSize);
-      var baseRow = Math.floor(playerYPos/tileSize);
-      var colOverlap = playerXPos%tileSize;
-      var rowOverlap = playerYPos%tileSize;
+      var baseCol    = Math.floor(player.XPos/tileSize);
+      var baseRow    = Math.floor(player.YPos/tileSize);
+      var colOverlap = player.XPos%tileSize;
+      var rowOverlap = player.YPos%tileSize;
 
       //Horzontal collision
       if(player.xspeed>0){
         if((thisLevel.map[baseRow][baseCol+1]>0 && !thisLevel.map[baseRow][baseCol]) ||
            (thisLevel.map[baseRow+1][baseCol+1]>0 && !thisLevel.map[baseRow+1][baseCol] && rowOverlap)){
-          playerXPos=baseCol*tileSize;
+          player.XPos=baseCol*tileSize;
         }
       }
 
       if(player.xspeed<0){
         if((!thisLevel.map[baseRow][baseCol+1]>0 && thisLevel.map[baseRow][baseCol]) ||
            (!thisLevel.map[baseRow+1][baseCol+1]>0 && thisLevel.map[baseRow+1][baseCol] && rowOverlap)){
-          playerXPos=(baseCol+1)*tileSize;
+          player.XPos=(baseCol+1)*tileSize;
         }
       }
 
@@ -547,51 +478,51 @@
       if(player.yspeed>0){
         if((thisLevel.map[baseRow+1][baseCol]>0 && !thisLevel.map[baseRow][baseCol]) ||
            (thisLevel.map[baseRow+1][baseCol+1]>0 && !thisLevel.map[baseRow][baseCol+1] && colOverlap)){
-          playerYPos = baseRow*tileSize;
+          player.YPos = baseRow*tileSize;
         }
       }
 
       if(player.yspeed<0){
         if((!thisLevel.map[baseRow+1][baseCol]>0 && thisLevel.map[baseRow][baseCol]) ||
            (!thisLevel.map[baseRow+1][baseCol+1]>0 && thisLevel.map[baseRow][baseCol+1] && rowOverlap)){
-          playerYPos=(baseRow+1)*tileSize;
+          player.YPos=(baseRow+1)*tileSize;
         }
       }
     }) ();  
 
     //object collision
-    for(var chest in thisLevel.chests){
-      var thisChest = thisLevel.chests[chest];
-      if(playerCollided(thisChest,playerXPos,playerYPos)){
+    for(var chest in thisLevel.GameObjects.chests){
+      var thisChest = thisLevel.GameObjects.chests[chest];
+      if(playerCollided(thisChest,player.XPos,player.YPos)){
         if(player.yspeed<0){
-          playerYPos=thisChest.YPos+tileSize;
+          player.YPos=thisChest.YPos+tileSize;
         }
         if(player.yspeed>0){
-          playerYPos=thisChest.YPos-tileSize;
+          player.YPos=thisChest.YPos-tileSize;
         }
         if(player.xspeed>0){
-          playerXPos=thisChest.XPos-tileSize;
+          player.XPos=thisChest.XPos-tileSize;
         }
         if(player.xspeed<0){
-          playerXPos=thisChest.XPos+tileSize;
+          player.XPos=thisChest.XPos+tileSize;
         }
       }    
     }
 
-    for(var npc in thisLevel.npcs){
-      var thisnpc = thisLevel.npcs[npc];
-      if(playerCollided(thisnpc,playerXPos,playerYPos)){
+    for(var npc in thisLevel.GameObjects.npcs){
+      var thisnpc = thisLevel.GameObjects.npcs[npc];
+      if(playerCollided(thisnpc,player.XPos,player.YPos)){
         if(player.yspeed<0){
-          playerYPos=thisnpc.YPos+tileSize;
+          player.YPos=thisnpc.YPos+tileSize;
         }
         if(player.yspeed>0){
-          playerYPos=thisnpc.YPos-tileSize;
+          player.YPos=thisnpc.YPos-tileSize;
         }
         if(player.xspeed>0){
-          playerXPos=thisnpc.XPos-tileSize;
+          player.XPos=thisnpc.XPos-tileSize;
         }
         if(player.xspeed<0){
-          playerXPos=thisnpc.XPos+tileSize;
+          player.XPos=thisnpc.XPos+tileSize;
         }
       }    
     }
@@ -599,9 +530,8 @@
     //enemy collision
     //Horzontal collision
 
-    (function enemyCollision() {
-      for(enemy in thisLevel.enemies){
-        var thisEnemy  = thisLevel.enemies[enemy];
+      for(enemy in thisLevel.GameObjects.enemies){
+        var thisEnemy  = thisLevel.GameObjects.enemies[enemy];
         var baseCol    = Math.floor(thisEnemy.XPos/tileSize);
         var baseRow    = Math.floor(thisEnemy.YPos/tileSize);
         var colOverlap = thisEnemy.XPos%tileSize;
@@ -636,70 +566,68 @@
           }
         }
       }
-    })  ();
 
     //item pick up
-    for(var item in thisLevel.collectables){
-      if(thisLevel.collectables[item].available && playerCollided(thisLevel.collectables[item],playerXPos,playerYPos)){
-        thisLevel.collectables[item].available = false;
-        switch(thisLevel.collectables[item].type){
+    for(var item in thisLevel.GameObjects.collectables){
+      if(thisLevel.GameObjects.collectables[item].available && playerCollided(thisLevel.GameObjects.collectables[item],player.XPos,player.YPos)){
+        thisLevel.GameObjects.collectables[item].available = false;
+        switch(thisLevel.GameObjects.collectables[item].type){
           case "heart":
-            addLife(player,thisLevel.collectables[item].qty);
+            addLife(player,thisLevel.GameObjects.collectables[item].qty);
             break;
           case "heartContainer":
-            addLife(player,thisLevel.collectables[item].qty);
+            addLife(player,thisLevel.GameObjects.collectables[item].qty);
             player.maxLives += 1;
             player.lives = player.maxLives;
-            textBox('"I feel stronger somehow..."');         
-            break;   
+            textBox('"I feel stronger somehow..."');
+            break;
           case "weapon":
-            player = equip(player,thisLevel.collectables[item]);
+            player = equip(player,thisLevel.GameObjects.collectables[item]);
             updateInventory(player.inventory);
-            break;  
+            inventory.innerHTML = updateInventory(player.inventory);
+            break;
           case "key":
-            player.keys.push(thisLevel.collectables[item]);
+            player.keys.push(thisLevel.GameObjects.collectables[item]);
             updateKeys(player);
             break;
           case "money":
-            bank = updateBank(bank, thisLevel.collectables[item].qty);
+            player.bank = updateBank(player.bank, thisLevel.GameObjects.collectables[item].qty);
             break;
           case "relic":
-            player.inventory.push(thisLevel.collectables[item]);
-            updateInventory(player.inventory);
+            player.inventory.push(thisLevel.GameObjects.collectables[item]);
+            inventory.innerHTML = updateInventory(player.inventory);
             textBox('It\'s a strange metal bar. It looks like it was meant to have some sort of function.' );
             break;
           case "fish":
-            player.inventory.push(thisLevel.collectables[item]);
+            player.inventory.push(thisLevel.GameObjects.collectables[item]);
             updateInventory(player.inventory);
             break;
         }
-        if(thisLevel.collectables[item].name === 'end'){
+        if(thisLevel.GameObjects.collectables[item].name === 'end'){
           thisLevel = levels.level2;
           reRender();
-          playerXPos = thisLevel.playerCol*tileSize;
-          playerYPos = thisLevel.playerRow*tileSize;
         } 
       }
     }  
 
     //damage
-    for(var enemy in thisLevel.enemies){  
-      if(playerCollided(thisLevel.enemies[enemy],playerXPos,playerYPos) && player.recovering === false){
+    for(var enemy in thisLevel.GameObjects.enemies){  
+      if(playerCollided(thisLevel.GameObjects.enemies[enemy],player.XPos,player.YPos) && player.recovering === false){
         //take damage
-        loseLife(player,thisLevel.enemies[enemy]);
+        loseLife(player,thisLevel.GameObjects.enemies[enemy]);
         player.recovering = true;
         //bump backward
-        if(player.xspeed < 0 || thisLevel.enemies[enemy].xspeed > 0 && player.yspeed === 0){
-          playerXPos +=80;
+        if(player.xspeed < 0 || thisLevel.GameObjects.enemies[enemy].xspeed > 0 && player.yspeed === 0){
+          player.XPos += 80;
         }
-        else if(player.xspeed > 0 || thisLevel.enemies[enemy].xspeed < 0 && player.yspeed === 0){
-          playerXPos -=80;
+        else if(player.xspeed > 0 || thisLevel.GameObjects.enemies[enemy].xspeed < 0 && player.yspeed === 0){
+          player.XPos -= 80;
         }
-        else if(player.yspeed > 0 || thisLevel.enemies[enemy].yspeed < 0){
-          playerYPos -=80;
+        else if(player.yspeed > 0 || thisLevel.GameObjects.enemies[enemy].yspeed < 0){
+          player.YPos -= 80;
         }
-        else if(player.yspeed < 0 || thisLevel.enemies[enemy].yspeed > 0){
-          playerYPos +=80;
+        else if(player.yspeed < 0 || thisLevel.GameObjects.enemies[enemy].yspeed > 0){
+          player.YPos += 80;
         }
       }
     } 
@@ -721,42 +649,43 @@
 
     //attack
     if(player.attacking && tick > 2 && tick < 4){
-      for(var enemy in thisLevel.enemies){
-        var thisEnemy = thisLevel.enemies[enemy];
+      for(var enemy in thisLevel.GameObjects.enemies){
+        var thisEnemy = thisLevel.GameObjects.enemies[enemy];
         //up attack
         if(player.direction === "up" && 
-          playerYPos - 53 <= thisEnemy.YPos && 
-          playerYPos > thisEnemy.YPos && 
-          playerXPos + 29 >= thisEnemy.XPos && 
-          playerXPos - 29 <= thisEnemy.XPos ){
-          thisEnemy.hp -= player.attack;
+          player.YPos - 53 <= thisEnemy.YPos && 
+          player.YPos > thisEnemy.YPos && 
+          player.XPos + 29 >= thisEnemy.XPos && 
+          player.XPos - 29 <= thisEnemy.XPos ){
+          thisEnemy.takeDamage(player.attack);
           thisEnemy.YPos -= 20;
+          console.log(player.attack);
         }
         //down attack
         if(player.direction === "down" && 
-          playerYPos + 53 > thisEnemy.YPos  && 
-          playerYPos < thisEnemy.YPos && 
-          playerXPos + 29 >= thisEnemy.XPos && 
-          playerXPos - 29 <= thisEnemy.XPos ){
-          thisEnemy.hp -= player.attack;
+          player.YPos + 53 > thisEnemy.YPos  && 
+          player.YPos < thisEnemy.YPos && 
+          player.XPos + 29 >= thisEnemy.XPos && 
+          player.XPos - 29 <= thisEnemy.XPos ){
+          thisEnemy.takeDamage(player.attack);
           thisEnemy.YPos += 20;
         }
         // //right attack
         if(player.direction === "right" && 
-          playerXPos + 53 >= thisEnemy.XPos && 
-          playerXPos < thisEnemy.XPos && 
-          playerYPos + 29 >= thisEnemy.YPos && 
-          playerYPos - 29 <= thisEnemy.YPos ){
-          thisEnemy.hp -= player.attack;
+          player.XPos + 53 >= thisEnemy.XPos && 
+          player.XPos < thisEnemy.XPos && 
+          player.YPos + 29 >= thisEnemy.YPos && 
+          player.YPos - 29 <= thisEnemy.YPos ){
+          thisEnemy.takeDamage(player.attack);
           thisEnemy.XPos += 20;
         }
         // //left attack
         if(player.direction === "left" && 
-          playerXPos - 53 <= thisEnemy.XPos && 
-          playerXPos > thisEnemy.XPos && 
-          playerYPos + 29 >= thisEnemy.YPos && 
-          playerYPos - 29 <= thisEnemy.YPos ){
-          thisEnemy.hp -= player.attack;
+          player.XPos - 53 <= thisEnemy.XPos && 
+          player.XPos > thisEnemy.XPos && 
+          player.YPos + 29 >= thisEnemy.YPos && 
+          player.YPos - 29 <= thisEnemy.YPos ){
+          thisEnemy.takeDamage(player.attack);
           thisEnemy.XPos -= 20;
         }
         if(thisEnemy.hp <= 0){
@@ -765,78 +694,81 @@
           if(thisEnemy.specialItem){
             switch(thisEnemy.specialItem){
               case "key":
-              thisLevel.collectables.push(new Key({col:currentx,row:currenty}));
-              drawItems(thisLevel.collectables);
+              thisLevel.GameObjects.collectables.push(new Key({col:currentx,row:currenty}));
+              drawItems(thisLevel.GameObjects.collectables);
               break;
             }
           }    
           else if(randomNumBetween(3) === 1){
-            thisLevel.collectables.push(dropItem(thisEnemy));
+            thisLevel.GameObjects.collectables.push(dropItem(thisEnemy));
+            drawItems(thisLevel.GameObjects.collectables);
           }
-          removeFromArray(thisLevel.enemies,thisEnemy);
+          removeFromArray(thisLevel.GameObjects.enemies,thisEnemy);
         }
       }
     }
 
     //action button
     if(actionPressed){
-      for(var chest in thisLevel.chests){
-        var thisChest = thisLevel.chests[chest];
+      for(var chest in thisLevel.GameObjects.chests){
+        var thisChest = thisLevel.GameObjects.chests[chest];
         if(thisChest.empty === false){
           //up action
           if(player.direction === "up" && 
-            playerYPos <= thisChest.YPos + 50 && 
-            playerYPos > thisChest.YPos && 
-            playerXPos <= thisChest.XPos + 15 && 
-            playerXPos >= thisChest.XPos - 15 ){
-            chestOpen(thisChest, player, keys);  
+            player.YPos <= thisChest.YPos + 50 && 
+            player.YPos > thisChest.YPos && 
+            player.XPos <= thisChest.XPos + 15 && 
+            player.XPos >= thisChest.XPos - 15 ){
+            chestOpen(thisChest, player, keys);
+            drawItems(thisLevel.GameObjects.collectables);
           }
           //down action
           if(player.direction === "down" && 
-            playerYPos >= thisChest.YPos - 50 && 
-            playerYPos < thisChest.YPos && 
-            playerXPos <= thisChest.XPos + 15 && 
-            playerXPos >= thisChest.XPos - 15 ){
+            player.YPos >= thisChest.YPos - 50 && 
+            player.YPos < thisChest.YPos && 
+            player.XPos <= thisChest.XPos + 15 && 
+            player.XPos >= thisChest.XPos - 15 ){
             chestOpen(thisChest, player, keys);
+            drawItems(thisLevel.GameObjects.collectables);
           }
           //right action
           if(player.direction === "right" && 
-            playerXPos >= thisChest.YPos - 50 && 
-            playerXPos < thisChest.XPos && 
-            playerYPos <= thisChest.YPos + 15 && 
-            playerYPos >= thisChest.YPos - 15 ){
+            player.XPos >= thisChest.YPos - 50 && 
+            player.XPos < thisChest.XPos && 
+            player.YPos <= thisChest.YPos + 15 && 
+            player.YPos >= thisChest.YPos - 15 ){
             chestOpen(thisChest, player, keys);
+            drawItems(thisLevel.GameObjects.collectables);
           }
           //left action
           if(player.direction === "left" && 
-            playerXPos <= thisChest.YPos + 50 && 
-            playerXPos > thisChest.XPos && 
-            playerYPos <= thisChest.YPos + 15 && 
-            playerYPos >= thisChest.YPos - 15 ){
+            player.XPos <= thisChest.YPos + 50 && 
+            player.XPos > thisChest.XPos && 
+            player.YPos <= thisChest.YPos + 15 && 
+            player.YPos >= thisChest.YPos - 15 ){
             chestOpen(thisChest, player, keys);
+            drawItems(thisLevel.GameObjects.collectables);
           }
         }  
       }
-      for(var secret in thisLevel.secrets){
-        var thisSecret = thisLevel.secrets[secret];
-        action(thisSecret,player,playerXPos,playerYPos);
-      }
-      for(npc in thisLevel.npcs){
-        thisnpc = thisLevel.npcs[npc];
-        action(thisnpc,player,playerXPos,playerYPos);
+      for(npc in thisLevel.GameObjects.npcs){
+        thisnpc = thisLevel.GameObjects.npcs[npc];
+        action(thisnpc,player,player.XPos,player.YPos);
+        drawItems(thisLevel.GameObjects.collectables);
       }
       for(var pond in thisLevel.ponds){
         var thisPond = thisLevel.ponds[pond];
-        action(thisPond,player,playerXPos,playerYPos);
+        action(thisPond,player,player.XPos,player.YPos);
       }
       actionPressed = false;
     }
 
-    for(var door in thisLevel.doors){
+    for(var door in thisLevel.GameObjects.doors){
       var currentLevel = thisLevel;
-      var thisDoor = currentLevel.doors[door];
-      var thisArea = currentLevel.doors[door].dest;
-      if(playerCollided(thisDoor,playerXPos,playerYPos, 4)){
+      var thisDoor     = currentLevel.GameObjects.doors[door];
+      var thisArea     = currentLevel.GameObjects.doors[door].dest;
+
+      if(playerCollided(thisDoor,player.XPos,player.YPos, 4)){
         thisLevel  = levels[thisArea];
         player.col = thisDoor.destX;
         player.row = thisDoor.destY;
@@ -845,6 +777,7 @@
     }
 
     renderLevel();
+
     if(backgroundRender === false){
       renderBackground();
       backgroundRender = true;

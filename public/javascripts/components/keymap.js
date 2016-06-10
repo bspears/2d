@@ -1,8 +1,7 @@
 //Key mapping
   
-module.exports = function keyMap(player){
+module.exports = (function(player) {
   document.addEventListener('keydown', function(e){
-    console.log(e.keyCode);
     switch(e.keyCode){
       case 65:
         leftPressed = true;
@@ -20,12 +19,21 @@ module.exports = function keyMap(player){
         downPressed = true;
         player.direction = "down";
         break;
-      case 32:
-        player.jumping = true;
-        break;
       case 16:
-        player.attacking = true;
-        break;
+        if(tick < 10){
+          player.attacking = true;
+        }
+        break;      
+      case 191:
+        if(textDisplay.value){
+          actionPressed = false;
+          clearTextBox();
+          updateGame();
+        }
+        else{
+          actionPressed = true;
+        }
+        break;  
     }
   }, false);
 
@@ -43,13 +51,14 @@ module.exports = function keyMap(player){
       case 83:
         downPressed = false;
         break;
-      case 32:
-        player.jumping = false;
-        break;
       case 16:
         player.attacking = false;
+        tick = 0;
         break;
+      case 191:
+        actionPressed = false;
+        break;  
     }
   }, false);
-}
+});
 
